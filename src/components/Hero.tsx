@@ -109,7 +109,7 @@ export default function Hero() {
         transition={{ duration: 1.2, delay: 0.3 }}
         className="absolute inset-0 z-[1] pointer-events-none"
       >
-        <div className="absolute top-1/2 -translate-y-1/2 right-0 w-full h-full md:w-1/2 lg:w-[45%] pointer-events-auto">
+        <div className="absolute inset-0 pointer-events-auto">
           <SplineScene scene={SPLINE_SCENE_URL} className="h-full w-full" />
         </div>
       </motion.div>
@@ -134,17 +134,37 @@ export default function Hero() {
           </motion.div>
 
           {/* Name — serif display */}
-          <h1 className="font-serif-display font-bold leading-[0.9] tracking-tight text-balance mb-7">
-            <AnimatedTitle
-              text="Anbu"
-              className="block text-[clamp(3.75rem,9vw,7.5rem)] text-stark drop-shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
-              delay={0.45}
-            />
-            <AnimatedTitle
-              text="Malligarjun"
-              className="block text-[clamp(3.4rem,8vw,6.5rem)] text-gradient-display"
-              delay={0.75}
-            />
+          <h1 className="font-serif-display font-bold leading-[0.85] tracking-tighter text-balance mb-10 relative">
+            <div className="relative inline-block">
+              <AnimatedTitle
+                text="Anbu"
+                className="block text-[clamp(4rem,12vw,9rem)] text-stark drop-shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
+                delay={0.45}
+              />
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: "100%" }}
+                transition={{ delay: 1.2, duration: 1, ease: "circOut" }}
+                className="absolute -bottom-2 left-0 h-1 bg-neon/40 blur-sm"
+              />
+            </div>
+            <div className="relative">
+              <AnimatedTitle
+                text="Malligarjun"
+                className="block text-[clamp(3.5rem,10vw,8rem)] text-gradient-display leading-tight py-2"
+                delay={0.75}
+              />
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2, duration: 1 }}
+                className="absolute -right-8 top-1/2 -translate-y-1/2 hidden lg:block"
+              >
+                <span className="font-mono text-[10px] tracking-[0.5em] uppercase text-neon/30 vertical-text rotate-180">
+                  DEVELOPER · CREATOR
+                </span>
+              </motion.div>
+            </div>
           </h1>
 
           {/* Description */}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
 import { LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -19,168 +19,166 @@ export interface GlassDockProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
-  ({ items, className, dockClassName, activeItem, ...props }, ref) => {
-    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-    const [direction, setDirection] = useState(0);
-    const [tooltipX, setTooltipX] = useState(0);
-    const dockRef = useRef<HTMLDivElement>(null);
-    const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  (
+      {
+          items,
+          className,
+          dockClassName,
+          activeItem,
+          ...props
+      },
+      ref
+  ) => {
+      const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+      const [direction, setDirection] = useState(0);
 
-    const handleMouseEnter = useCallback((index: number) => {
-      if (hoveredIndex !== null && index !== hoveredIndex) {
-        setDirection(index > hoveredIndex ? 1 : -1);
-      }
-      setHoveredIndex(index);
+      const handleMouseEnter = (index: number) => {
+          if (hoveredIndex !== null && index !== hoveredIndex) {
+              setDirection(index > hoveredIndex ? 1 : -1);
+          }
+          setHoveredIndex(index);
+      };
 
-      // Dynamic tooltip positioning
-      const itemEl = itemRefs.current[index];
-      const dockEl = dockRef.current;
-      if (itemEl && dockEl) {
-        const itemRect = itemEl.getBoundingClientRect();
-        const dockRect = dockEl.getBoundingClientRect();
-        setTooltipX(itemRect.left - dockRect.left + itemRect.width / 2);
-      }
-    }, [hoveredIndex]);
+      const getTooltipPosition = (index: number) => index * 56 + 28;
 
-    return (
-      <div ref={ref} className={cn('w-max', className)} {...props}>
-        <div
-          ref={dockRef}
-          className={cn(
-            'relative flex gap-5 items-center px-7 py-4 rounded-2xl',
-            'glass-border bg-black/80',
-            'backdrop-blur-xl shadow-2xl',
-            dockClassName
-          )}
-          onMouseLeave={() => {
-            setHoveredIndex(null);
-            setDirection(0);
-          }}
-        >
-          <AnimatePresence>
-            {hoveredIndex !== null && (
-              <motion.div
-                layout
-                initial={{ opacity: 0, scale: 0.92, y: 12 }}
-                animate={{
-                  opacity: 1,
-                  scale: 1,
-                  y: -60,
-                  x: tooltipX,
-                }}
-                exit={{ opacity: 0, scale: 0.92, y: 12 }}
-                transition={{ type: 'spring', stiffness: 120, damping: 18 }}
-                className="absolute top-0 left-0 pointer-events-none z-30"
-                style={{ transform: 'translateX(-50%)' }}
-              >
-                <div
-                  className={cn(
-                    'px-4 py-1.5 rounded-lg',
-                    'bg-void-200 text-stark',
-                    'shadow-lg flex items-center justify-center',
-                    'border border-void-400',
-                    'min-w-[80px]'
-                  )}
-                >
-                  <div className="relative h-4 flex items-center justify-center overflow-hidden w-full">
-                    <AnimatePresence mode="popLayout" custom={direction}>
-                      <motion.span
-                        key={items[hoveredIndex].title}
-                        custom={direction}
-                        initial={{
-                          x: direction > 0 ? 35 : -35,
-                          opacity: 0,
-                          filter: 'blur(6px)',
-                        }}
-                        animate={{
-                          x: 0,
-                          opacity: 1,
-                          filter: 'blur(0px)',
-                        }}
-                        exit={{
-                          x: direction > 0 ? -35 : 35,
-                          opacity: 0,
-                          filter: 'blur(6px)',
-                        }}
-                        transition={{
-                          duration: 0.3,
-                          ease: 'easeOut',
-                        }}
-                        className="text-[12px] font-medium tracking-wide whitespace-nowrap"
-                      >
-                        {items[hoveredIndex].title}
-                      </motion.span>
-                    </AnimatePresence>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {items.map((el, index) => {
-            const Icon = el.icon;
-            const isHovered = hoveredIndex === index;
-            const isActive = activeItem === el.href?.replace('#', '') || activeItem === el.title.toLowerCase();
-            
-            const handleClick = () => {
-              if (el.onClick) {
-                el.onClick();
-              } else if (el.href) {
-                const target = document.querySelector(el.href);
-                if (target) {
-                  target.scrollIntoView({ behavior: 'smooth' });
-                } else {
-                  window.location.href = el.href;
-                }
-              }
-            };
-
-            return (
+      return (
+          <div
+              ref={ref}
+              className={cn('w-max', className)}
+              {...props}
+          >
               <div
-                key={el.title}
-                ref={(node) => { itemRefs.current[index] = node; }}
-                onMouseEnter={() => handleMouseEnter(index)}
-                onClick={handleClick}
-                className={cn(
-                  "relative w-12 h-12 flex items-center justify-center cursor-pointer rounded-2xl transition-all duration-500",
-                  isActive 
-                    ? "bg-neon/15 text-neon shadow-[0_0_20px_rgba(0,255,148,0.2)] border border-neon/20" 
-                    : "text-stark-dim hover:text-stark hover:bg-white/5 border border-transparent hover:border-white/10"
-                )}
-                role="button"
-                tabIndex={0}
-                aria-label={el.title}
-                data-cursor-hover
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    handleClick();
-                  }
-                }}
-              >
-                <motion.div
-                  whileTap={{ scale: 0.95 }}
-                  animate={{
-                    scale: isHovered ? 1.2 : 1,
-                    y: isHovered ? -2 : 0,
+                  className={cn(
+                      "relative flex gap-4 items-center px-6 py-4 rounded-2xl",
+                      "glass-border bg-void/80",
+                      "backdrop-blur-xl shadow-2xl border border-white/10",
+                      dockClassName
+                  )}
+                  onMouseLeave={() => {
+                      setHoveredIndex(null);
+                      setDirection(0);
                   }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-                >
-                  <Icon
-                    size={20}
-                    strokeWidth={isActive ? 2.5 : 2}
-                    className={cn(
-                      'transition-colors duration-300',
-                      isActive ? "animate-pulse" : ""
-                    )}
-                  />
-                </motion.div>
+              >
+        <AnimatePresence>
+          {hoveredIndex !== null && (
+            <motion.div
+              layout
+              initial={{ opacity: 0, scale: 0.92, y: 12 }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                y: -65,
+                x: getTooltipPosition(hoveredIndex),
+              }}
+              exit={{ opacity: 0, scale: 0.92, y: 12 }}
+              transition={{ type: 'spring', stiffness: 150, damping: 20 }}
+              className="absolute top-0 left-0 pointer-events-none z-30"
+              style={{ transform: 'translateX(-50%)' }}
+            >
+              <div
+                className={cn(
+                  'px-4 py-1.5 rounded-lg',
+                  'bg-neon text-void font-mono text-[10px] font-bold tracking-[0.2em] uppercase',
+                  'shadow-[0_10px_30px_rgba(0,255,148,0.3)] flex items-center justify-center',
+                  'min-w-[100px]' 
+                )}
+              >
+                <div className="relative h-4 flex items-center justify-center overflow-hidden w-full">
+                  <AnimatePresence mode="popLayout" custom={direction}>
+                    <motion.span
+                      key={items[hoveredIndex].title}
+                      custom={direction}
+                      initial={{
+                        x: direction > 0 ? 35 : -35,
+                        opacity: 0,
+                        filter: 'blur(6px)',
+                      }}
+                      animate={{
+                        x: 0,
+                        opacity: 1,
+                        filter: 'blur(0px)',
+                      }}
+                      exit={{
+                        x: direction > 0 ? -35 : 35,
+                        opacity: 0,
+                        filter: 'blur(6px)',
+                      }}
+                      transition={{
+                        duration: 0.3,
+                        ease: 'easeOut',
+                      }}
+                      className="whitespace-nowrap"
+                    >
+                      {items[hoveredIndex].title}
+                    </motion.span>
+                  </AnimatePresence>
+                </div>
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 bg-neon" />
               </div>
-            );
-          })}
-        </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {items.map((el, index) => {
+          const Icon = el.icon;
+          const isHovered = hoveredIndex === index;
+          const isActive = activeItem === el.href?.replace('#', '') || activeItem === el.title.toLowerCase();
+          
+          const handleClick = () => {
+            if (el.onClick) {
+              el.onClick();
+            } else if (el.href) {
+              const target = document.querySelector(el.href);
+              if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+              } else {
+                window.location.href = el.href;
+              }
+            }
+          };
+
+          return (
+            <div
+              key={el.title}
+              onMouseEnter={() => handleMouseEnter(index)}
+              onClick={handleClick}
+              className={cn(
+                "relative w-10 h-10 flex items-center justify-center cursor-pointer rounded-xl transition-all duration-300",
+                isActive ? "bg-neon/20 text-neon shadow-[0_0_15px_rgba(0,255,148,0.2)]" : "text-stark-dim hover:text-stark hover:bg-white/5"
+              )}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  handleClick();
+                }
+              }}
+              data-cursor-hover
+            >
+              <motion.div
+                whileTap={{ scale: 0.95 }}
+                animate={{
+                  scale: isHovered ? 1.2 : 1,
+                  y: isHovered ? -2 : 0,
+                }}
+                transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+              >
+                <Icon
+                  size={20}
+                  strokeWidth={isActive ? 2.5 : 2}
+                  className={cn(
+                    'transition-colors duration-300',
+                    isActive && "animate-pulse"
+                  )}
+                />
+              </motion.div>
+            </div>
+          );
+        })}
       </div>
-    );
-  }
+    </div>
+  );
+}
 );
 
 GlassDock.displayName = 'GlassDock';
