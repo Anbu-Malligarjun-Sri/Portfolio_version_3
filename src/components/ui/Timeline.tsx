@@ -43,20 +43,22 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
           >
             {/* Sticky year label */}
             <div className="sticky top-40 z-40 flex max-w-xs flex-col items-center self-start md:w-full md:flex-row lg:max-w-sm">
-              <div className="absolute left-3 flex h-10 w-10 items-center justify-center rounded-full bg-void md:left-3">
-                <div className="h-4 w-4 rounded-full border-2 border-emerald-DEFAULT/40 bg-void-200 shadow-[0_0_12px_rgba(0,255,136,0.15)]" />
+              <div className="absolute left-3 flex h-12 w-12 items-center justify-center rounded-full bg-void/80 backdrop-blur-md border border-white/10 md:left-3 shadow-[0_0_20px_rgba(0,255,148,0.1)] transition-all duration-500 group-hover:scale-110 group-hover:border-neon/50">
+                <div className="h-3 w-3 rounded-full bg-neon shadow-[0_0_12px_rgba(0,255,148,0.6)] animate-pulse" />
               </div>
-              <h3 className="hidden font-sans font-bold text-display-lg tracking-tight text-stark/20 md:block md:pl-20">
+              <h3 className="hidden font-serif-display font-bold text-6xl tracking-tighter text-stark/10 md:block md:pl-24 transition-colors duration-500 group-hover:text-neon/20">
                 {item.title}
               </h3>
             </div>
 
             {/* Content */}
-            <div className="relative w-full pl-20 pr-4 md:pl-4">
-              <h3 className="mb-6 block font-sans font-bold text-3xl tracking-tight text-stark/30 md:hidden">
+            <div className="relative w-full pl-20 pr-4 md:pl-4 transition-all duration-500 group-hover:translate-x-2">
+              <h3 className="mb-6 block font-serif-display font-bold text-4xl tracking-tight text-neon/40 md:hidden">
                 {item.title}
               </h3>
-              {item.content}
+              <div className="rounded-3xl border border-white/5 bg-white/[0.02] p-8 backdrop-blur-sm transition-all duration-500 hover:border-white/10 hover:bg-white/[0.04] hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+                {item.content}
+              </div>
             </div>
           </div>
         ))}

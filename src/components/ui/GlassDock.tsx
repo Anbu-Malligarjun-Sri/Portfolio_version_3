@@ -141,7 +141,12 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                 ref={(node) => { itemRefs.current[index] = node; }}
                 onMouseEnter={() => handleMouseEnter(index)}
                 onClick={handleClick}
-                className="relative w-10 h-10 flex items-center justify-center cursor-pointer"
+                className={cn(
+                  "relative w-12 h-12 flex items-center justify-center cursor-pointer rounded-2xl transition-all duration-500",
+                  isActive 
+                    ? "bg-neon/15 text-neon shadow-[0_0_20px_rgba(0,255,148,0.2)] border border-neon/20" 
+                    : "text-stark-dim hover:text-stark hover:bg-white/5 border border-transparent hover:border-white/10"
+                )}
                 role="button"
                 tabIndex={0}
                 aria-label={el.title}
@@ -155,32 +160,20 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                 <motion.div
                   whileTap={{ scale: 0.95 }}
                   animate={{
-                    scale: isHovered ? 1.1 : 1,
-                    y: isHovered ? -3 : 0,
+                    scale: isHovered ? 1.2 : 1,
+                    y: isHovered ? -2 : 0,
                   }}
                   transition={{ type: 'spring', stiffness: 300, damping: 24 }}
                 >
                   <Icon
-                    size={22}
-                    strokeWidth={2}
+                    size={20}
+                    strokeWidth={isActive ? 2.5 : 2}
                     className={cn(
-                      'transition-colors duration-200',
-                      isHovered
-                        ? 'text-emerald-DEFAULT'
-                        : isActive
-                          ? 'text-emerald-DEFAULT/80'
-                          : 'text-neutral-400'
+                      'transition-colors duration-300',
+                      isActive ? "animate-pulse" : ""
                     )}
                   />
                 </motion.div>
-                {/* Active section indicator dot */}
-                {isActive && !isHovered && (
-                  <motion.div
-                    layoutId="dock-active-indicator"
-                    className="absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-emerald-DEFAULT"
-                    transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                  />
-                )}
               </div>
             );
           })}

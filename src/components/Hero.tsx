@@ -105,10 +105,13 @@ export default function Hero() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
+        style={{ opacity: bgOpacity }}
         transition={{ duration: 1.2, delay: 0.3 }}
-        className="absolute inset-0 z-[1]"
+        className="absolute inset-0 z-[1] pointer-events-none"
       >
-        <SplineScene scene={SPLINE_SCENE_URL} className="h-full w-full" />
+        <div className="absolute top-1/2 -translate-y-1/2 right-0 w-full h-full md:w-1/2 lg:w-[45%] pointer-events-auto">
+          <SplineScene scene={SPLINE_SCENE_URL} className="h-full w-full" />
+        </div>
       </motion.div>
 
       {/* ── TEXT CONTENT — floats above the Spline layer ── */}

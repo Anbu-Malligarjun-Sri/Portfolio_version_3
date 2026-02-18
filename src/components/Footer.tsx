@@ -57,27 +57,37 @@ export default function Footer() {
   };
 
   return (
-    <footer className="relative border-t border-void-400/50 bg-void-50/50 px-6 py-16 backdrop-blur-sm sm:px-12 lg:px-24">
-      <div className="mx-auto max-w-6xl">
-        <div className="grid gap-12 md:grid-cols-[1.2fr,1fr,1fr,auto]">
+    <footer className="relative border-t border-white/5 bg-void/80 px-6 py-24 backdrop-blur-xl sm:px-12 lg:px-24 overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-neon/50 to-transparent" />
+      <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-neon/5 blur-[100px]" />
+      <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-purple-500/5 blur-[100px]" />
+
+      <div className="mx-auto max-w-7xl relative z-10">
+        <div className="grid gap-16 md:grid-cols-[1.5fr,1fr,1fr,auto]">
           {/* Brand */}
-          <div>
-            <p className="font-sans text-2xl font-bold text-gradient">AM</p>
+          <div className="flex flex-col items-start">
+            <div className="group cursor-pointer">
+              <p className="font-serif-display text-4xl font-bold tracking-tighter text-stark transition-all duration-300 group-hover:text-neon">
+                AM<span className="text-neon">.</span>
+              </p>
+            </div>
             <p
-              className="mt-3 text-[13px] leading-relaxed text-stark-dim"
+              className="mt-6 max-w-xs text-[15px] leading-relaxed text-stark-muted"
               style={{ fontFamily: "var(--font-body)" }}
             >
-              Engineer. Founder. Builder.
+              Engineering a future where technology restores what nature has lost. Let&apos;s build something that matters.
             </p>
             <p
-              className="mt-1 text-[13px] text-stark-dim"
+              className="mt-4 flex items-center gap-2 text-[13px] font-medium text-stark-dim"
               style={{ fontFamily: "var(--font-body)" }}
             >
+              <span className="h-1.5 w-1.5 rounded-full bg-neon animate-pulse" />
               Tamil Nadu, India
             </p>
 
             {/* Social icons */}
-            <div className="mt-6 flex items-center gap-2.5">
+            <div className="mt-10 flex items-center gap-4">
               {SOCIAL_LINKS.map((link) => {
                 const Icon = link.icon;
                 return (
@@ -87,9 +97,10 @@ export default function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={link.label}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-void-400/50 text-stark-dim transition-all duration-300 hover:border-neon/25 hover:text-neon hover:scale-105"
+                    className="group relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/5 bg-white/5 text-stark-dim transition-all duration-500 hover:border-neon/30 hover:text-neon hover:-translate-y-1 hover:shadow-[0_10px_20px_-5px_rgba(0,255,148,0.2)]"
                   >
-                    <Icon className="h-3.5 w-3.5" />
+                    <Icon className="h-4 w-4 relative z-10" />
+                    <div className="absolute inset-0 scale-0 rounded-xl bg-neon/5 transition-transform duration-500 group-hover:scale-100" />
                   </a>
                 );
               })}
@@ -153,16 +164,26 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-void-400/40 pt-8 sm:flex-row">
-          <p className="text-[11px] text-stark-dim">
-            &copy; {new Date().getFullYear()} Anbu Malligarjun. All rights
+        <div className="mt-20 flex flex-col items-center justify-between gap-6 border-t border-white/5 pt-10 sm:flex-row">
+          <p className="text-[12px] font-medium text-stark-dim/60">
+            &copy; {new Date().getFullYear()} <span className="text-stark">Anbu Malligarjun</span>. All rights
             reserved.
           </p>
-          <p className="flex items-center gap-1.5 text-[11px] text-stark-dim">
-            Built with
-            <Heart className="inline h-3 w-3 fill-neon text-neon" />
-            and an unreasonable amount of curiosity.
-          </p>
+          <div className="flex items-center gap-6">
+            <p className="flex items-center gap-2 text-[12px] font-medium text-stark-dim/60">
+              Built with
+              <Heart className="inline h-3.5 w-3.5 fill-neon text-neon animate-pulse" />
+              and pure curiosity.
+            </p>
+            <button
+              onClick={scrollToTop}
+              className="group flex items-center gap-2 font-mono text-[10px] font-bold tracking-[0.2em] uppercase text-neon/60 transition-all duration-300 hover:text-neon"
+              data-cursor-hover
+            >
+              Back to Top
+              <ArrowUp className="h-3.5 w-3.5 transition-transform duration-300 group-hover:-translate-y-1" />
+            </button>
+          </div>
         </div>
       </div>
     </footer>
