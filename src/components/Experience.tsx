@@ -141,12 +141,11 @@ const TIMELINE_DATA = [
           icon={<Briefcase className="h-5 w-5" />}
           title="AI-ML Research Intern — BITS Pilani Hyderabad"
           subtitle="June — July 2025"
-          description="Applied Machine Learning and AI research under faculty guidance. Built production-grade ML pipelines and contributed to cutting-edge computer vision research on real-world datasets."
+          description="Completed a 7-week intensive internship focused on developing and applying machine learning models for real-world problem-solving under faculty guidance."
           tags={["Python", "TensorFlow", "Computer Vision", "Deep Learning", "Research"]}
           highlights={[
-            "Developed end-to-end ML pipeline for medical image analysis",
-            "Published internal research paper on attention mechanisms",
-            "Optimized model inference time by 40% through quantization",
+            "Hands-on data preprocessing, model training, and performance evaluation",
+            "Production-grade ML pipelines using Python-based frameworks",
           ]}
         />
       </div>
@@ -236,26 +235,26 @@ const GRID_ICONS = [
 const BENTO_ITEMS: BentoItem[] = [
   {
     id: 1,
-    title: "Sagittarius",
-    subtitle: "De-extinction · Biotech · Genomics",
-    description: "Reversing extinction through advanced biotechnology.",
-    icon: <Rocket className="h-4 w-4" />,
+    title: "Deep Learning",
+    subtitle: "TensorFlow · PyTorch · Computer Vision",
+    description: "Building production ML pipelines and neural networks.",
+    icon: <Brain className="h-4 w-4" />,
     color: "rgba(0,255,136,0.2)",
   },
   {
     id: 2,
-    title: "Sam SciTech",
-    subtitle: "Science Education · YouTube · Tamil",
-    description: "Making CS & ML accessible in Tamil.",
-    icon: <Globe className="h-4 w-4" />,
-    color: "rgba(239,68,68,0.2)",
+    title: "Full-Stack",
+    subtitle: "Next.js · React · TypeScript",
+    description: "End-to-end web applications with modern frameworks.",
+    icon: <Code2 className="h-4 w-4" />,
+    color: "rgba(59,130,246,0.2)",
   },
   {
     id: 3,
-    title: "Words & Worlds",
-    subtitle: "Poetry · Philosophy · Writing",
-    description: "Tamil poetry and philosophical essays.",
-    icon: <Code2 className="h-4 w-4" />,
+    title: "Systems & AI",
+    subtitle: "RAG · LLM · Bioinformatics",
+    description: "Intelligent systems at the edge of research.",
+    icon: <Cpu className="h-4 w-4" />,
     color: "rgba(251,191,36,0.2)",
   },
 ];

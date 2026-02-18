@@ -21,12 +21,6 @@ interface Project {
 
 const projects: Project[] = projectsData;
 
-/* Placeholder images from /Yotube/ folder */
-const placeholderImages = [
-  "/Yotube/background.png",
-  "/Yotube/logo.jpg",
-];
-
 export default function Projects() {
   const sectionRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -72,27 +66,45 @@ export default function Projects() {
 
       <div className="relative mx-auto max-w-7xl">
         <SectionHeading
-          label="Projects"
-          title="Things I've Built"
-          subtitle="Technical work across ML, full-stack systems, and open-source tools. Driven by curiosity, built with precision."
+          label="The Engineer"
+          title="Projects"
+          subtitle="Technical work across ML, full-stack systems, and computational biology. Driven by curiosity, built with precision."
           align="center"
         />
 
         <div
           ref={gridRef}
-          className="grid grid-cols-1 gap-x-10 gap-y-12 md:grid-cols-2 xl:grid-cols-3 justify-items-center items-stretch"
+          className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 items-stretch"
         >
-          {projects.map((project, index) => (
+          {projects.map((project) => (
             <ProjectCard
               key={project.id}
-              className="project-card w-full max-w-105"
+              className="project-card w-full"
               title={project.title}
               description={project.description}
-              imgSrc={project.image || placeholderImages[index % placeholderImages.length]}
               link={project.link}
               linkText="View Project"
+              tags={project.tags}
+              featured={project.featured}
             />
           ))}
+        </div>
+
+        {/* "More coming" indicator */}
+        <div className="mt-12 flex justify-center">
+          <div className="inline-flex items-center gap-3 rounded-2xl border border-dashed border-void-400/60 bg-void-100/40 px-8 py-5 text-stark-dim transition-colors duration-300 hover:border-neon/30 hover:text-neon">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-void-400/60 text-lg">
+              +
+            </div>
+            <div className="text-left">
+              <p className="text-xs font-medium uppercase tracking-wider text-stark-muted">
+                More Projects Coming
+              </p>
+              <p className="text-[11px] text-stark-dim">
+                Currently building &amp; shipping
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </section>

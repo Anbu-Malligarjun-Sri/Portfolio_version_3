@@ -1,26 +1,35 @@
 [
   {
-    "id": "tars-llm",
-    "title": "TARS — Local LLM Retrieval System",
-    "description": "A Local LLM Augmentation & Retrieval System built with TypeScript. Implements intelligent document retrieval for context-aware AI responses.",
-    "tags": ["TypeScript", "LLM", "NLTK", "AI"],
+    "id": "deep-sea-edna",
+    "title": "Deep-Sea eDNA AI Pipeline",
+    "description": "AI-driven bioinformatics pipeline for identifying marine biodiversity from environmental DNA sequences. Uses K-means/DBSCAN clustering and custom neural networks for automated taxonomy classification from phylum to species level.",
+    "tags": ["Python", "PyTorch", "Bioinformatics", "Deep Learning"],
     "image": "",
+    "link": "https://github.com/Anbu-Malligarjun-Sri/Deep-Sea-AI-Pipeline-eDNA-Analysis",
+    "featured": true
+  },
+  {
+    "id": "tars-llm",
+    "title": "TARS — Local LLM AI Agent",
+    "description": "A privacy-first AI agent using local LLMs and Retrieval-Augmented Generation (RAG) to synthesize custom data without external APIs. Features custom persona modules for TARS-style adaptive dialogue.",
+    "tags": ["TypeScript", "LLM", "RAG", "AI"],
+    "image": "/projects/tars-terminal.png",
     "link": "https://github.com/Anbu-Malligarjun-Sri/TARS-Local-LLM-Augementation-Retrieval-System",
     "featured": true
   },
   {
     "id": "habit-tracker",
     "title": "Habit Tracker",
-    "description": "An open-source modern habit-tracking web app with gamification, visual analytics, and streak-based motivation to help users build consistency.",
+    "description": "A gamified habit-tracking web app with streaks, XP, achievements, and visual analytics. RPG-like experience that transforms daily routines into engaging progression systems.",
     "tags": ["TypeScript", "React", "Web App", "UI/UX"],
-    "image": "",
+    "image": "/projects/habit-tracker.png",
     "link": "https://github.com/Anbu-Malligarjun-Sri/Habit-Tracker",
     "featured": true
   },
   {
     "id": "retail-price-optimization",
     "title": "Retail Price Optimization",
-    "description": "A data-driven ML approach to determine optimal pricing strategies for retail products using statistical analysis and predictive modeling.",
+    "description": "Data-driven ML approach for optimal retail pricing strategies using statistical analysis, predictive modeling, and demand elasticity estimation.",
     "tags": ["Python", "ML", "Data Science", "Jupyter"],
     "image": "",
     "link": "https://github.com/Anbu-Malligarjun-Sri/Retail-Price-Optimization",
@@ -29,7 +38,7 @@
   {
     "id": "terminal-tui",
     "title": "Terminal Graphical UI (TUI)",
-    "description": "A textual-based terminal UI application showcasing advanced terminal rendering, interactive widgets, and modern CLI design patterns.",
+    "description": "A Claude Code-inspired terminal AI assistant that runs entirely offline using local LLMs. Features a rich Textual-based TUI with file browsing, AI reasoning, and terminal output panels.",
     "tags": ["Python", "TUI", "Terminal", "Textual"],
     "image": "",
     "link": "https://github.com/Anbu-Malligarjun-Sri/Terminal-Graphical-User-Interface-TUI-",
@@ -38,19 +47,10 @@
   {
     "id": "portfolio-v3",
     "title": "Portfolio v3 (This Site)",
-    "description": "Personal portfolio with Next.js 16, React 19, GSAP scroll animations, Spline 3D, and Lenis smooth scrolling. Built for performance and visual storytelling.",
+    "description": "Personal portfolio built with Next.js 16, React 19, GSAP scroll animations, Spline 3D, and Lenis smooth scrolling. Designed for performance and visual storytelling.",
     "tags": ["Next.js", "React 19", "GSAP", "Spline", "Tailwind"],
     "image": "",
     "link": "https://github.com/Anbu-Malligarjun-Sri",
-    "featured": false
-  },
-  {
-    "id": "techazura",
-    "title": "TechAzura 2K26",
-    "description": "Technical event platform built with TypeScript for organizing tech symposium activities, registrations, and event coordination.",
-    "tags": ["TypeScript", "Web", "Event Platform"],
-    "image": "",
-    "link": "https://github.com/Anbu-Malligarjun-Sri/techazura2k26",
     "featured": false
   }
 ]

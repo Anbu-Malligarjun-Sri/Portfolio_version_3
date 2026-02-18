@@ -9,11 +9,18 @@ out/
 build/
 dist/
 
+# ── Build tooling caches ──
+.turbo/
+.vercel/
+coverage/
+.cache/
+
 # ── Debug / logs ──
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+*.log
 
 # ── Environment files ──
 .env
@@ -58,3 +65,7 @@ tracked.txt
 nm_tracked.txt
 *.tmp
 *.temp
+
+# ── Generated media dumps ──
+public/Video_frames/
+public/Video_frames_updated/
