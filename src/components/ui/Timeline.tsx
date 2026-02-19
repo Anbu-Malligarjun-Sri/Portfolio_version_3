@@ -1,82 +1,256 @@
 "use client";
 
 import {
-  useMotionValueEvent,
   useScroll,
   useTransform,
   motion,
+  useMotionValue,
+  useSpring,
+  AnimatePresence,
 } from "framer-motion";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 
 interface TimelineEntry {
   title: string;
   content: React.ReactNode;
 }
 
-export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
+// ─── Animated number counter for the year label ────────────────────────────
+function GlitchYear({ title, isActive }: { title: string; isActive: boolean }) {
+  const [displayed, setDisplayed] = useState(title);
+  const chars = "0123456789";
+
+  useEffect(() => {
+    if (!isActive) return;
+    let iterations = 0;
+    const max = 12;
+    const interval = setInterval(() => {
+      setDisplayed(
+        title
+          .split("")
+          .map((char, i) =>
+            iterations > i * 3
+              ? title[i]
+              : /[0-9]/.test(char)
+              ? chars[Math.floor(Math.random() * chars.length)]
+              : char
+          )
+          .join("")
+      );
+      if (++iterations >= max + title.length * 3) clearInterval(interval);
+    }, 40);
+    return () => clearInterval(interval);
+  }, [isActive, title]);
+
+  return <>{displayed}</>;
+}
+
+// ─── Individual timeline item ──────────────────────────────────────────────
+function TimelineItem({
+  item,
+  index,
+  totalItems,
+}: {
+  item: TimelineEntry;
+  index: number;
+  totalItems: number;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const [inView, setInView] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.15, rootMargin: "-60px 0px" }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="group relative flex justify-start pt-10 md:gap-12 md:pt-32"
+      initial={{ opacity: 0, y: 40 }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+      transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {/* ── LEFT: Sticky year ─────────────────────────────── */}
+      <div className="sticky top-36 z-40 flex max-w-xs flex-col items-center self-start md:w-full md:flex-row lg:max-w-sm">
+
+        {/* Node */}
+        <div className="relative left-3 md:left-3">
+          {/* Outer ring pulse */}
+          <AnimatePresence>
+            {hovered && (
+              <motion.div
+                key="ring"
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1.9, opacity: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.9, ease: "easeOut" }}
+                className="absolute inset-0 rounded-full border border-neon/40"
+              />
+            )}
+          </AnimatePresence>
+
+          <motion.div
+            animate={{
+              boxShadow: hovered
+                ? "0 0 28px 6px rgba(0,255,148,0.25), 0 0 0 1.5px rgba(0,255,148,0.4)"
+                : "0 0 14px 2px rgba(0,255,148,0.08), 0 0 0 1px rgba(255,255,255,0.06)",
+              scale: hovered ? 1.12 : 1,
+            }}
+            transition={{ duration: 0.35 }}
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-[#080c0a] border border-white/8 backdrop-blur-md"
+          >
+            <motion.div
+              animate={{
+                backgroundColor: hovered
+                  ? "rgba(0,255,148,1)"
+                  : "rgba(0,255,148,0.7)",
+                boxShadow: hovered
+                  ? "0 0 18px 4px rgba(0,255,148,0.7)"
+                  : "0 0 10px 2px rgba(0,255,148,0.4)",
+              }}
+              transition={{ duration: 0.3 }}
+              className="h-3 w-3 rounded-full"
+            />
+          </motion.div>
+        </div>
+
+        {/* Year label — desktop only */}
+        <h3 className="hidden select-none font-mono text-[4.5rem] font-bold leading-none tracking-tighter md:block md:pl-20 transition-all duration-500 tabular-nums"
+          style={{
+            color: hovered ? "rgba(0,255,148,0.22)" : "rgba(255,255,255,0.05)",
+            textShadow: hovered ? "0 0 60px rgba(0,255,148,0.1)" : "none",
+            letterSpacing: "-0.04em",
+          }}
+        >
+          <GlitchYear title={item.title} isActive={hovered || inView} />
+        </h3>
+      </div>
+
+      {/* ── RIGHT: Content card ───────────────────────────── */}
+      <div className="relative w-full pl-20 pr-2 md:pl-2">
+        {/* Year label — mobile only */}
+        <p className="mb-4 block font-mono text-3xl font-bold tracking-tighter text-neon/30 md:hidden">
+          {item.title}
+        </p>
+
+        <motion.div
+          animate={{
+            borderColor: hovered
+              ? "rgba(0,255,148,0.12)"
+              : "rgba(255,255,255,0.04)",
+            backgroundColor: hovered
+              ? "rgba(255,255,255,0.028)"
+              : "rgba(255,255,255,0.015)",
+            boxShadow: hovered
+              ? "0 24px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04)"
+              : "0 4px 20px rgba(0,0,0,0.2)",
+            translateX: hovered ? 4 : 0,
+          }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          className="rounded-2xl border bg-white/[0.015] p-7 md:p-9 backdrop-blur-sm"
+        >
+          {/* Corner accent */}
+          <motion.div
+            animate={{ opacity: hovered ? 1 : 0, scaleX: hovered ? 1 : 0 }}
+            transition={{ duration: 0.3 }}
+            className="absolute top-0 left-0 h-[1px] w-24 origin-left rounded-full bg-gradient-to-r from-neon/60 to-transparent"
+          />
+          <motion.div
+            animate={{ opacity: hovered ? 1 : 0, scaleY: hovered ? 1 : 0 }}
+            transition={{ duration: 0.3, delay: 0.05 }}
+            className="absolute top-0 left-0 w-[1px] h-16 origin-top rounded-full bg-gradient-to-b from-neon/60 to-transparent"
+          />
+
+          {item.content}
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Main Timeline ─────────────────────────────────────────────────────────
+export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);
 
   useEffect(() => {
-    if (ref.current) {
-      const rect = ref.current.getBoundingClientRect();
-      setHeight(rect.height);
-    }
-  }, [ref]);
+    const measure = () => {
+      if (trackRef.current) setHeight(trackRef.current.getBoundingClientRect().height);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start 10%", "end 50%"],
+    offset: ["start 15%", "end 60%"],
   });
 
-  const heightTransform = useTransform(scrollYProgress, [0, 1], [0, height]);
-  const opacityTransform = useTransform(scrollYProgress, [0, 0.1], [0, 1]);
+  const lineHeight = useTransform(scrollYProgress, [0, 1], [0, height]);
+  const lineOpacity = useTransform(scrollYProgress, [0, 0.04], [0, 1]);
+  // Smooth spring for the progress line
+  const springHeight = useSpring(lineHeight, { stiffness: 80, damping: 20, mass: 0.8 });
 
   return (
-    <div className="w-full font-sans md:px-10" ref={containerRef}>
-      <div ref={ref} className="relative mx-auto max-w-7xl pb-20">
-        {data.map((item, index) => (
-          <div
-            key={index}
-            className="flex justify-start pt-16 md:gap-14 md:pt-40"
-          >
-            {/* Sticky year label */}
-            <div className="sticky top-40 z-40 flex max-w-xs flex-col items-center self-start md:w-full md:flex-row lg:max-w-sm">
-              <div className="absolute left-3 flex h-12 w-12 items-center justify-center rounded-full bg-void/80 backdrop-blur-md border border-white/10 md:left-3 shadow-[0_0_20px_rgba(0,255,148,0.1)] transition-all duration-500 group-hover:scale-110 group-hover:border-neon/50">
-                <div className="h-3 w-3 rounded-full bg-neon shadow-[0_0_12px_rgba(0,255,148,0.6)] animate-pulse" />
-              </div>
-              <h3 className="hidden font-serif-display font-bold text-6xl tracking-tighter text-stark/10 md:block md:pl-24 transition-colors duration-500 group-hover:text-neon/20">
-                {item.title}
-              </h3>
-            </div>
+    <div
+      ref={containerRef}
+      className="relative w-full font-sans md:px-10 overflow-hidden"
+    >
+      {/* Ambient glow — far background */}
+      <div className="pointer-events-none absolute left-4 top-1/4 h-[500px] w-[2px] blur-[20px] bg-gradient-to-b from-transparent via-neon/15 to-transparent" />
 
-            {/* Content */}
-            <div className="relative w-full pl-20 pr-4 md:pl-4 transition-all duration-500 group-hover:translate-x-2">
-              <h3 className="mb-6 block font-serif-display font-bold text-4xl tracking-tight text-neon/40 md:hidden">
-                {item.title}
-              </h3>
-              <div className="rounded-3xl border border-white/5 bg-white/[0.02] p-8 backdrop-blur-sm transition-all duration-500 hover:border-white/10 hover:bg-white/[0.04] hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
-                {item.content}
-              </div>
-            </div>
-          </div>
+      <div ref={trackRef} className="relative mx-auto max-w-7xl pb-20">
+
+        {data.map((item, index) => (
+          <TimelineItem
+            key={index}
+            item={item}
+            index={index}
+            totalItems={data.length}
+          />
         ))}
 
-        {/* Progress line */}
+        {/* ── Track rail ──────────────────────────────────── */}
         <div
-          style={{ height: height + "px" }}
-          className="absolute left-8 top-0 w-[2px] overflow-hidden bg-[linear-gradient(to_bottom,var(--tw-gradient-stops))] from-transparent from-[0%] via-void-400 to-transparent to-[99%] [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)] md:left-8"
+          style={{ height }}
+          className="absolute left-8 top-0 w-px md:left-8"
         >
+          {/* Static ghost rail */}
+          <div className="absolute inset-0 w-px bg-gradient-to-b from-transparent via-white/[0.04] to-transparent" />
+
+          {/* Animated fill */}
           <motion.div
+            style={{ height: springHeight, opacity: lineOpacity }}
+            className="absolute top-0 left-0 w-px overflow-hidden rounded-full"
+          >
+            <div className="h-full w-full bg-gradient-to-b from-neon/70 via-neon/40 to-neon/5"
+              style={{ filter: "drop-shadow(0 0 4px rgba(0,255,148,0.6))" }}
+            />
+          </motion.div>
+
+          {/* Travelling glow dot */}
+          <motion.div
+            className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-neon"
+            aria-hidden
             style={{
-              height: heightTransform,
-              opacity: opacityTransform,
+              top: springHeight as any,
+              boxShadow: "0 0 16px 4px rgba(0,255,148,0.5)",
             }}
-            className="absolute inset-x-0 top-0 w-[2px] rounded-full bg-gradient-to-t from-emerald-DEFAULT via-emerald-600 to-transparent from-[0%] via-[10%]"
           />
         </div>
       </div>
     </div>
   );
 };
+
+export default Timeline;

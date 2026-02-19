@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useMotionValueEvent, useScroll } from "framer-motion";
 import { Home, Briefcase, FolderOpen, User, Mail, Rocket, Menu, X } from "lucide-react";
 import { GlassDock } from "./ui/GlassDock";
@@ -21,7 +21,13 @@ export default function Navigation() {
   const [activeSection, setActiveSection] = useState("home");
   const [isVisible, setIsVisible] = useState(true);
   const { scrollY } = useScroll();
-  const lastScrollY = { current: 0 };
+  /**
+   * BUG FIX: was `const lastScrollY = { current: 0 }` — a plain
+   * object literal recreated on EVERY render, so the previous
+   * scroll position was always 0, making direction detection wrong.
+   * A `useRef` persists its `.current` value across renders.
+   */
+  const lastScrollY = useRef(0);
 
   // Active section tracking via IntersectionObserver
   useEffect(() => {
@@ -46,6 +52,15 @@ export default function Navigation() {
 
     return () => observers.forEach((o) => o.disconnect());
   }, []);
+
+  // Close mobile menu on Escape key (accessibility)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) setIsOpen(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
 
   // Scroll direction-based auto-hide
   useMotionValueEvent(scrollY, "change", (latest) => {

@@ -289,7 +289,8 @@ export default function Experience() {
       {/* Staggered Tech Grid — "What I Build With" */}
       <div className="relative overflow-hidden">
         <StaggeredGrid
-          gridIcons={GRID_ICONS}
+          images={[]}
+          gridIcons={GRID_ICONS.map((i) => i.icon)}
           bentoItems={BENTO_ITEMS}
           centerText="TOOLS"
         />

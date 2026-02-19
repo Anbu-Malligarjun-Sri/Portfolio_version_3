@@ -16,25 +16,35 @@ export interface BentoItem {
   icon: React.ReactNode
   content?: React.ReactNode
   image?: string
+    color?: string
 }
 
 export interface StaggeredGridProps {
-  images: string[]
-  bentoItems: BentoItem[]
-  centerText?: string
-  credits?: {
-      madeBy: { text: string; href: string }
-      moreDemos: { text: string; href: string }
-  }
-  className?: string
-  showFooter?: boolean
+    images: string[]
+    bentoItems: BentoItem[]
+    centerText?: string
+    credits?: {
+            madeBy: { text: string; href: string }
+            moreDemos: { text: string; href: string }
+    }
+    className?: string
+    showFooter?: boolean
+    gridIcons?: React.ReactNode[]
 }
+
+const DEFAULT_GRID_ICONS: React.ReactNode[] = [
+    <Github size={20} key="gh" />,
+    <Youtube size={20} key="yt" />,
+    <Linkedin size={20} key="li" />,
+    <Mail size={20} key="mail" />,
+];
 
 export function StaggeredGrid({
   images,
   bentoItems,
   centerText = "Anbu",
   className,
+    gridIcons,
 }: StaggeredGridProps) {
   const [isLoaded, setIsLoaded] = useState(false)
   const gridFullRef = useRef<HTMLDivElement>(null)
@@ -165,12 +175,14 @@ export function StaggeredGrid({
                           )
                       }
                       if (i === 17 || i === 18) return null;
-                      const icons = [Github, Youtube, Linkedin, Mail];
-                      const Icon = icons[i % icons.length];
+                      const iconPool = (gridIcons && gridIcons.length > 0) ? gridIcons : DEFAULT_GRID_ICONS;
+                      const IconEl = iconPool[i % iconPool.length];
                       return (
                           <figure key={`img-${i}`} className="grid__item m-0 relative z-10 will-change-transform group">
                               <div className="grid__item-img w-full h-full rounded-xl overflow-hidden border border-white/5 bg-white/[0.02] flex items-center justify-center transition-all duration-500 group-hover:bg-neon/5 group-hover:border-neon/20">
-                                  <Icon size={20} className="text-stark/10 group-hover:text-neon transition-colors duration-300" />
+                                  <span className="text-stark/10 group-hover:text-neon transition-colors duration-300">
+                                    {IconEl}
+                                  </span>
                               </div>
                           </figure>
                       )

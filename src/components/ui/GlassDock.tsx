@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -32,14 +32,27 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
       const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
       const [direction, setDirection] = useState(0);
 
+      /**
+       * WHY: Instead of calculating tooltip position with fixed math
+       * (`index * 56 + 28`), which breaks when padding, gap, or item
+       * count changes, we read the ACTUAL center of each item from the
+       * DOM. `offsetLeft + offsetWidth / 2` gives the pixel-perfect
+       * horizontal center of any item regardless of viewport or layout.
+       */
+      const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+      const [tooltipX, setTooltipX] = useState(0);
+
       const handleMouseEnter = (index: number) => {
           if (hoveredIndex !== null && index !== hoveredIndex) {
               setDirection(index > hoveredIndex ? 1 : -1);
           }
           setHoveredIndex(index);
-      };
 
-      const getTooltipPosition = (index: number) => index * 56 + 28;
+          const item = itemRefs.current[index];
+          if (item) {
+              setTooltipX(item.offsetLeft + item.offsetWidth / 2);
+          }
+      };
 
       return (
           <div
@@ -68,19 +81,25 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
                 opacity: 1,
                 scale: 1,
                 y: -65,
-                x: getTooltipPosition(hoveredIndex),
+                /**
+                 * `tooltipX` is the absolute left-center of the hovered
+                 * item (set via itemRefs on hover). The inner tooltip div
+                 * uses `-translate-x-1/2` so it auto-centers over the item.
+                 * Removing the conflicting outer `style.transform` that
+                 * was fighting Framer Motion's own transform management.
+                 */
+                x: tooltipX,
               }}
               exit={{ opacity: 0, scale: 0.92, y: 12 }}
               transition={{ type: 'spring', stiffness: 150, damping: 20 }}
               className="absolute top-0 left-0 pointer-events-none z-30"
-              style={{ transform: 'translateX(-50%)' }}
             >
               <div
                 className={cn(
-                  'px-4 py-1.5 rounded-lg',
+                  '-translate-x-1/2 px-4 py-1.5 rounded-lg',
                   'bg-neon text-void font-mono text-[10px] font-bold tracking-[0.2em] uppercase',
                   'shadow-[0_10px_30px_rgba(0,255,148,0.3)] flex items-center justify-center',
-                  'min-w-[100px]' 
+                  'min-w-25'
                 )}
               >
                 <div className="relative h-4 flex items-center justify-center overflow-hidden w-full">
@@ -140,6 +159,7 @@ export const GlassDock = React.forwardRef<HTMLDivElement, GlassDockProps>(
           return (
             <div
               key={el.title}
+              ref={(el) => { itemRefs.current[index] = el; }}
               onMouseEnter={() => handleMouseEnter(index)}
               onClick={handleClick}
               className={cn(
