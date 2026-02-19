@@ -336,11 +336,11 @@ export default function AstronautReveal() {
               className="mb-6 flex items-center justify-center gap-3"
               style={{ opacity: Math.min(1, revealOpacity * 1.5) }}
             >
-              <span className="h-px w-8 bg-neutral-400/50" />
-              <span className="font-mono text-[9px] tracking-[0.45em] text-neutral-500 uppercase">
+              <span className="h-px w-8 bg-[#1a1a1a]/60" />
+              <span className="text-[10px] tracking-[0.45em] text-[#1a1a1a] uppercase" style={{ fontFamily: "var(--font-jetbrains-mono)" }}>
                 About me
               </span>
-              <span className="h-px w-8 bg-neutral-400/50" />
+              <span className="h-px w-8 bg-[#1a1a1a]/60" />
             </div>
 
             {/* Headline */}
@@ -357,24 +357,23 @@ export default function AstronautReveal() {
 
             {/* Bio */}
             <p
-              className="mx-auto mt-8 max-w-lg text-[15px] font-light leading-loose text-neutral-600"
+              className="mx-auto mt-8 max-w-lg text-[15px] leading-loose text-[#2a2a2a]"
               style={{
-                fontFamily: "var(--font-body)",
-                opacity: Math.max(0, (revealOpacity - 0.3) / 0.7),
+                fontFamily: "var(--font-cormorant)",
+                fontWeight: 500,
               }}
             >
               Engineer, founder, and researcher — working at the intersection of{" "}
-              <span className="font-medium text-neutral-800">AI</span>,{" "}
-              <span className="font-medium text-neutral-800">Deep Learning</span>,
+              <span className="font-bold text-[#0f0f0f]" style={{ fontFamily: "var(--font-space-grotesk)" }}>AI</span>,{" "}
+              <span className="font-bold text-[#0f0f0f]" style={{ fontFamily: "var(--font-space-grotesk)" }}>Deep Learning</span>,
               and{" "}
-              <span className="font-medium text-neutral-800">Computer Vision</span>.
+              <span className="font-bold text-[#0f0f0f]" style={{ fontFamily: "var(--font-space-grotesk)" }}>Computer Vision</span>.
               From fine-tuning LLMs to shipping full-stack products.
             </p>
 
             {/* Stats */}
             <div
               className="mx-auto mt-10 flex max-w-sm items-center justify-center gap-8"
-              style={{ opacity: Math.max(0, (revealOpacity - 0.5) * 2) }}
             >
               {[
                 { num: "6+", label: "Projects" },
@@ -382,10 +381,10 @@ export default function AstronautReveal() {
                 { num: "5", label: "Languages" },
               ].map((s) => (
                 <div key={s.label} className="text-center">
-                  <span className="block font-sans text-2xl font-bold text-neutral-900">
+                  <span className="block text-2xl font-bold text-[#0f0f0f]" style={{ fontFamily: "var(--font-space-grotesk)" }}>
                     {s.num}
                   </span>
-                  <span className="mt-0.5 block font-mono text-[9px] tracking-[0.2em] text-neutral-500 uppercase">
+                  <span className="mt-0.5 block text-[9px] tracking-[0.2em] text-[#2a2a2a] uppercase" style={{ fontFamily: "var(--font-jetbrains-mono)" }}>
                     {s.label}
                   </span>
                 </div>

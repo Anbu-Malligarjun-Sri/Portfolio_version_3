@@ -136,6 +136,8 @@ export default function Hero() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_30%,rgba(0,255,148,0.07)_0%,transparent_50%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_70%,rgba(59,130,246,0.05)_0%,transparent_50%)]" />
         </motion.div>
+        {/* Teal glow behind the robot */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_68%_38%,rgba(0,140,100,0.55)_0%,rgba(0,90,70,0.25)_35%,transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,255,148,0.06)_0%,transparent_35%)] animate-[pulseGlow_8s_ease-in-out_infinite]" />
       </div>
 
