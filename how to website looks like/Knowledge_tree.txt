@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anbu Malligarjun — Skills Tree</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:100%;height:100%;overflow:hidden;background:#020b07;}
+  #app{position:relative;width:100vw;height:100vh;}
+  canvas#three{display:block;position:absolute;inset:0;}
+
+  #overlay-svg{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    pointer-events:none;
+    overflow:visible;
+  }
+
+  /* ── Skill tags ── */
+  .stag{
+    position:absolute;
+    transform:translate(-50%,-100%);
+    pointer-events:auto;
+    cursor:pointer;
+    font-family:'Cormorant Garamond',Georgia,serif;
+    font-size:11px;
+    font-style:italic;
+    font-weight:400;
+    letter-spacing:0.09em;
+    padding:4px 12px 5px;
+    background:rgba(2,15,8,0.88);
+    border:1px solid rgba(0,200,120,0.25);
+    border-radius:1px;
+    white-space:nowrap;
+    transition:opacity 0.4s,box-shadow 0.3s,color 0.3s,transform 0.2s;
+    opacity:0;
+    animation:fadeTagIn 0.8s forwards;
+    user-select:none;
+  }
+  .stag:hover{
+    transform:translate(-50%,-108%) scale(1.08);
+    border-color:rgba(0,230,140,0.7);
+    z-index:10;
+  }
+  .stag.active{
+    border-color:rgba(0,255,160,0.9);
+    box-shadow:0 0 28px rgba(0,200,120,0.8),0 0 60px rgba(0,160,80,0.4);
+  }
+  @keyframes fadeTagIn{
+    from{opacity:0;transform:translate(-50%,-70%);}
+    to{opacity:1;transform:translate(-50%,-100%);}
+  }
+
+  /* ── Category labels ── */
+  .cat-label{
+    position:absolute;
+    pointer-events:none;
+    font-family:'Cinzel',serif;
+    font-size:9px;
+    font-weight:600;
+    letter-spacing:0.35em;
+    text-transform:uppercase;
+    color:rgba(0,200,120,0.5);
+    text-shadow:0 0 16px rgba(0,200,120,0.4);
+    transform:translate(-50%,-50%);
+    opacity:0;
+    animation:fadeTagIn 1.2s 0.3s forwards;
+    white-space:nowrap;
+  }
+
+  /* ── HUD ── */
+  #hud{
+    position:fixed;bottom:0;left:0;right:0;
+    display:flex;justify-content:space-between;align-items:flex-end;
+    padding:0 32px 26px;
+    pointer-events:none;
+    font-family:'Cormorant Garamond',Georgia,serif;
+  }
+  #hud-name{
+    font-size:13px;letter-spacing:0.38em;
+    color:rgba(0,200,120,0.5);
+    text-shadow:0 0 30px rgba(0,180,90,0.35);
+    text-transform:uppercase;
+    font-weight:300;
+  }
+  #hud-sub{
+    font-size:10px;letter-spacing:0.18em;
+    color:rgba(0,160,80,0.3);
+    text-transform:uppercase;
+    margin-top:3px;
+    font-style:italic;
+  }
+  #hud-hint{
+    font-size:10px;letter-spacing:0.22em;
+    color:rgba(0,140,70,0.3);
+    text-transform:uppercase;
+  }
+
+  /* ── Skill panel (click detail) ── */
+  #skill-panel{
+    position:fixed;top:50%;right:36px;
+    transform:translateY(-50%);
+    width:220px;
+    background:rgba(2,12,6,0.92);
+    border:1px solid rgba(0,200,120,0.3);
+    border-radius:2px;
+    padding:22px 20px;
+    pointer-events:auto;
+    opacity:0;
+    transition:opacity 0.4s,transform 0.4s;
+    transform:translateY(-50%) translateX(30px);
+    backdrop-filter:blur(8px);
+    z-index:50;
+  }
+  #skill-panel.visible{
+    opacity:1;
+    transform:translateY(-50%) translateX(0);
+  }
+  #panel-category{
+    font-family:'Cinzel',serif;
+    font-size:8px;
+    letter-spacing:0.4em;
+    color:rgba(0,200,120,0.6);
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  #panel-name{
+    font-family:'Cormorant Garamond',Georgia,serif;
+    font-size:26px;
+    font-weight:300;
+    font-style:italic;
+    letter-spacing:0.06em;
+    margin-bottom:10px;
+    line-height:1.1;
+  }
+  #panel-bar-wrap{
+    width:100%;
+    height:2px;
+    background:rgba(0,200,120,0.1);
+    border-radius:1px;
+    overflow:hidden;
+    margin-bottom:14px;
+  }
+  #panel-bar{
+    height:100%;
+    background:linear-gradient(90deg,#00c87a,#00ff9d);
+    border-radius:1px;
+    transition:width 0.8s cubic-bezier(0.22,1,0.36,1);
+    width:0%;
+    box-shadow:0 0 8px rgba(0,200,120,0.6);
+  }
+  #panel-close{
+    position:absolute;top:10px;right:12px;
+    font-family:'Cinzel',serif;
+    font-size:9px;
+    letter-spacing:0.2em;
+    color:rgba(0,200,120,0.4);
+    cursor:pointer;
+    padding:2px 6px;
+  }
+  #panel-close:hover{color:rgba(0,200,120,0.9);}
+
+  /* ── Zoom-out button ── */
+  #zoom-out{
+    position:fixed;top:24px;left:50%;transform:translateX(-50%);
+    font-family:'Cinzel',serif;
+    font-size:9px;letter-spacing:0.3em;
+    text-transform:uppercase;
+    color:rgba(0,200,120,0.5);
+    border:1px solid rgba(0,200,120,0.2);
+    padding:8px 20px;
+    cursor:pointer;
+    background:rgba(2,12,6,0.85);
+    backdrop-filter:blur(6px);
+    transition:all 0.3s;
+    opacity:0;
+    pointer-events:none;
+  }
+  #zoom-out.visible{opacity:1;pointer-events:auto;}
+  #zoom-out:hover{color:rgba(0,255,140,0.9);border-color:rgba(0,200,120,0.6);}
+
+  /* ── Vignette ── */
+  #vignette{
+    position:fixed;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 65%,transparent 25%,rgba(0,0,0,0.75) 100%);
+  }
+
+  /* ── Pull-ring scroll indicator ── */
+  #pull-ring{
+    position:fixed;bottom:42px;left:50%;
+    transform:translateX(-50%);
+    pointer-events:none;
+    opacity:0;
+    transition:opacity 0.4s;
+    z-index:60;
+  }
+  #pull-ring.visible{opacity:1;}
+  #pull-label{
+    position:fixed;bottom:18px;left:50%;
+    transform:translateX(-50%);
+    font-family:'Cinzel',serif;
+    font-size:8px;letter-spacing:0.46em;
+    text-transform:uppercase;
+    color:rgba(0,200,120,0.55);
+    pointer-events:none;
+    white-space:nowrap;
+    transition:opacity 0.4s,letter-spacing 0.6s;
+    z-index:60;
+    opacity:0;
+  }
+  #pull-label.visible{opacity:1;letter-spacing:0.62em;}
+  #pull-vignette{
+    position:fixed;inset:0;pointer-events:none;
+    z-index:4;
+    opacity:0;
+    background:radial-gradient(ellipse at 50% 50%,transparent 20%,rgba(0,0,0,0.6) 100%);
+  }
+
+  /* ── Loader ── */
+  #loader{
+    position:fixed;inset:0;background:#020b07;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    z-index:100;
+    font-family:'Cinzel',serif;
+    color:rgba(0,180,90,0.5);
+    transition:opacity 1.2s;
+    gap:16px;
+  }
+  #loader-title{font-size:13px;letter-spacing:0.5em;text-transform:uppercase;}
+  #loader-sub{
+    font-family:'Cormorant Garamond',serif;
+    font-size:11px;letter-spacing:0.2em;
+    font-style:italic;
+    color:rgba(0,160,80,0.3);
+  }
+  #loader-bar{width:180px;height:1px;background:rgba(0,200,120,0.15);position:relative;overflow:hidden;}
+  #loader-fill{
+    position:absolute;inset:0;
+    background:rgba(0,200,120,0.6);
+    transform:translateX(-100%);
+    animation:loadBar 0.9s 0.2s ease forwards;
+  }
+  @keyframes loadBar{to{transform:translateX(0);}}
+</style>
+</head>
+<body>
+<div id="loader">
+  <div id="loader-title">Summoning the Tree</div>
+  <div id="loader-bar"><div id="loader-fill"></div></div>
+  <div id="loader-sub">AI · Biology · Education</div>
+</div>
+
+<div id="app">
+  <canvas id="three"></canvas>
+  <svg id="overlay-svg"></svg>
+  <div id="vignette"></div>
+  <div id="pull-vignette"></div>
+  <canvas id="pull-ring" width="88" height="88"></canvas>
+  <div id="pull-label">scroll to release</div>
+
+  <div id="hud">
+    <div>
+      <div id="hud-name">Anbu Malligarjun</div>
+      <div id="hud-sub">AI · Biology · Education</div>
+    </div>
+    <div id="hud-hint">Click skill · Drag · Scroll</div>
+  </div>
+
+  <div id="skill-panel">
+    <div id="panel-close">✕ ESC</div>
+    <div id="panel-category"></div>
+    <div id="panel-name"></div>
+    <div id="panel-bar-wrap"><div id="panel-bar"></div></div>
+  </div>
+
+  <div id="zoom-out">↩ Back to Tree</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+'use strict';
+// ═══════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════
+const rng  = (a,b) => a + Math.random()*(b-a);
+const lerp = (a,b,t) => a+(b-a)*t;
+const v3   = (x,y,z) => new THREE.Vector3(x,y,z);
+const clamp= (v,a,b) => Math.max(a,Math.min(b,v));
+
+// ═══════════════════════════════════════════════
+// SKILLS DATA — organised by branch/category
+// ═══════════════════════════════════════════════
+const CATEGORIES = [
+  {
+    name:'Languages',
+    color:'#00e87d',
+    glow:'rgba(0,232,125,',
+    skills:[
+      {label:'Python',   prof:95},
+      {label:'JavaScript',prof:88},
+      {label:'Java',     prof:80},
+      {label:'C++',      prof:75},
+      {label:'HTML/CSS', prof:92},
+      {label:'MySQL',    prof:82},
+      {label:'C',        prof:70},
+    ]
+  },
+  {
+    name:'Technical',
+    color:'#00d4ff',
+    glow:'rgba(0,212,255,',
+    skills:[
+      {label:'Machine Learning', prof:90},
+      {label:'Deep Learning',    prof:85},
+      {label:'LLM Fine-tuning',  prof:82},
+      {label:'RAG',              prof:80},
+      {label:'Data Analysis',    prof:88},
+      {label:'UI/UX',            prof:78},
+      {label:'Manim Viz',        prof:75},
+    ]
+  },
+  {
+    name:'Frameworks',
+    color:'#7fff7f',
+    glow:'rgba(127,255,127,',
+    skills:[
+      {label:'TensorFlow',   prof:85},
+      {label:'Scikit-Learn', prof:88},
+      {label:'Hugging Face', prof:82},
+      {label:'Pandas',       prof:92},
+      {label:'NumPy',        prof:93},
+      {label:'Matplotlib',   prof:87},
+      {label:'Seaborn',      prof:80},
+    ]
+  },
+  {
+    name:'Tools',
+    color:'#ffd97d',
+    glow:'rgba(255,217,125,',
+    skills:[
+      {label:'AWS',      prof:75},
+      {label:'Git',      prof:90},
+      {label:'Figma',    prof:82},
+      {label:'Jupyter',  prof:93},
+      {label:'Framer',   prof:72},
+      {label:'WebFlow',  prof:70},
+      {label:'VS Code',  prof:95},
+    ]
+  },
+];
+
+// ═══════════════════════════════════════════════
+// RENDERER
+// ═══════════════════════════════════════════════
+const canvas   = document.getElementById('three');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled  = true;
+renderer.shadowMap.type     = THREE.PCFSoftShadowMap;
+renderer.toneMapping        = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure= 1.1;
+
+const scene  = new THREE.Scene();
+scene.fog    = new THREE.FogExp2(0x020b07, 0.015);
+
+const camera = new THREE.PerspectiveCamera(48, innerWidth/innerHeight, 0.1, 500);
+camera.position.set(0,11,34);
+camera.lookAt(0,13,0);
+
+// ═══════════════════════════════════════════════
+// SKY — deep teal/green night
+// ═══════════════════════════════════════════════
+const skyMat = new THREE.ShaderMaterial({
+  depthWrite:false,
+  uniforms:{uTime:{value:0}},
+  vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,1.0,1.0);}`,
+  fragmentShader:`
+    varying vec2 vUv;
+    uniform float uTime;
+    float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+    float noise(vec2 p){
+      vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);
+      return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);
+    }
+    void main(){
+      vec3 top=vec3(0.008,0.055,0.028);
+      vec3 bot=vec3(0.004,0.018,0.010);
+      vec3 col=mix(bot,top,pow(vUv.y,1.4));
+      // Aurora effect — greens
+      float a=noise(vec2(vUv.x*2.5+uTime*0.03,vUv.y*1.8+uTime*0.018));
+      float aurora=pow(max(0.0,a-0.42),2.2)*smoothstep(0.35,0.88,vUv.y);
+      col+=vec3(0.0,0.18,0.06)*aurora*0.8;
+      col+=vec3(0.0,0.08,0.14)*aurora*0.4;
+      col+=vec3(0.02,0.12,0.04)*aurora*0.3;
+      // Stars
+      float sn=hash(vUv*920.0+vec2(uTime*0.0009,0.0));
+      float flick=0.5+0.5*sin(uTime*(2.0+hash(floor(vUv*920.0))*5.0));
+      float star=step(0.993,sn)*smoothstep(0.22,1.0,vUv.y)*flick;
+      col+=vec3(0.4,1.0,0.6)*star*0.7;
+      gl_FragColor=vec4(col,1.0);
+    }
+  `
+});
+const skyMesh=new THREE.Mesh(new THREE.PlaneGeometry(2,2),skyMat);
+skyMesh.frustumCulled=false;skyMesh.renderOrder=-1;
+scene.add(skyMesh);
+
+// ═══════════════════════════════════════════════
+// MOON (greenish tint)
+// ═══════════════════════════════════════════════
+const moon=new THREE.Mesh(
+  new THREE.SphereGeometry(1.8,32,32),
+  new THREE.MeshStandardMaterial({color:0xc8ffe0,roughness:0.92,emissive:0x003d1a,emissiveIntensity:0.5})
+);
+moon.position.set(-20,40,-55);
+scene.add(moon);
+const haloS=new THREE.Sprite(new THREE.SpriteMaterial({color:0x00ff80,transparent:true,opacity:0.08,depthWrite:false}));
+haloS.scale.set(22,22,1);haloS.position.copy(moon.position);scene.add(haloS);
+
+// ═══════════════════════════════════════════════
+// LIGHTS
+// ═══════════════════════════════════════════════
+scene.add(new THREE.AmbientLight(0x061a0a,2.2));
+const moonDir=new THREE.DirectionalLight(0x7de8a0,2.8);
+moonDir.position.set(-16,36,4);
+moonDir.castShadow=true;
+moonDir.shadow.mapSize.set(4096,4096);
+moonDir.shadow.camera.left=-40;moonDir.shadow.camera.right=40;
+moonDir.shadow.camera.top=56;moonDir.shadow.camera.bottom=-16;
+moonDir.shadow.camera.far=140;moonDir.shadow.bias=-0.0004;
+scene.add(moonDir);
+const rimA=new THREE.DirectionalLight(0x003d1a,0.8);rimA.position.set(14,6,-22);scene.add(rimA);
+const rimB=new THREE.DirectionalLight(0x001a0d,0.5);rimB.position.set(-10,4,14);scene.add(rimB);
+const gGlow=new THREE.PointLight(0x004d22,1.0,30);gGlow.position.set(0,0.5,0);scene.add(gGlow);
+
+// ═══════════════════════════════════════════════
+// GROUND
+// ═══════════════════════════════════════════════
+const gGeo=new THREE.PlaneGeometry(320,320,90,90);
+const gMat=new THREE.MeshStandardMaterial({color:0x030c05,roughness:1.0});
+const gMesh=new THREE.Mesh(gGeo,gMat);
+gMesh.rotation.x=-Math.PI/2;gMesh.receiveShadow=true;
+scene.add(gMesh);
+const gpArr=gGeo.attributes.position.array;
+for(let i=0;i<gpArr.length;i+=3){
+  const gx=gpArr[i],gz=gpArr[i+2],d=Math.sqrt(gx*gx+gz*gz);
+  gpArr[i+1]=d<5?rng(-0.02,0.08):rng(-0.05,0.05);
+}
+gGeo.attributes.position.needsUpdate=true;
+gGeo.computeVertexNormals();
+
+// ═══════════════════════════════════════════════
+// TREE MATERIALS — dark bark tones
+// ═══════════════════════════════════════════════
+const matDark  = new THREE.MeshStandardMaterial({color:0x111008,roughness:0.98});
+const matMid   = new THREE.MeshStandardMaterial({color:0x191509,roughness:0.96});
+const matLight = new THREE.MeshStandardMaterial({color:0x221d0e,roughness:0.93,metalness:0.01});
+
+const treeGrp = new THREE.Group();
+scene.add(treeGrp);
+
+// ── Branch builder ──────────────────────
+function mkBranch(p0,p1,r0,r1,mat,seg=8){
+  const dir=new THREE.Vector3().subVectors(p1,p0);
+  const len=dir.length();
+  const g=new THREE.CylinderGeometry(r1,r0,len,seg,3);
+  // Gnarled bark — perturb verts slightly
+  const arr=g.attributes.position.array;
+  for(let i=0;i<arr.length;i+=3){
+    const nx=arr[i],ny=arr[i+1],nz=arr[i+2];
+    const d=Math.sqrt(nx*nx+nz*nz);
+    const s=rng(0.88,1.12);
+    arr[i]*=s; arr[i+2]*=s;
+    arr[i+1]+=rng(-0.04,0.04)*len;
+  }
+  g.attributes.position.needsUpdate=true;
+  g.computeVertexNormals();
+  const m=new THREE.Mesh(g,mat);
+  m.castShadow=true;m.receiveShadow=true;
+  m.position.copy(new THREE.Vector3().addVectors(p0,p1).multiplyScalar(0.5));
+  m.quaternion.setFromUnitVectors(v3(0,1,0),dir.normalize());
+  return m;
+}
+
+// ── Gnarled knob ──────────────────────
+function addKnob(pos,r,mat){
+  const g=new THREE.SphereGeometry(r,8,7).toNonIndexed();
+  const arr=g.attributes.position.array;
+  for(let i=0;i<arr.length;i+=3){
+    arr[i]  *=rng(0.75,1.45);
+    arr[i+1]*=rng(0.55,1.08);
+    arr[i+2]*=rng(0.75,1.42);
+  }
+  g.attributes.position.needsUpdate=true;g.computeVertexNormals();
+  const m=new THREE.Mesh(g,mat);
+  m.position.copy(pos);m.rotation.set(rng(0,6.28),rng(0,6.28),rng(0,6.28));
+  m.castShadow=true;treeGrp.add(m);
+}
+
+// ── Fine twig clusters ─────────────────
+function twigs(origin,mat,depth=0,max=3){
+  if(depth>=max)return;
+  const count=depth===0?(rng(3,5.9)|0):rng(2,3.9)|0;
+  for(let i=0;i<count;i++){
+    const ang=(i/count)*Math.PI*2+rng(-0.7,0.7);
+    const spread=depth===0?rng(1.0,2.2):rng(0.4,1.4);
+    const rise  =depth===0?rng(1.8,3.8):rng(1.0,2.5);
+    const dx=Math.cos(ang)*spread,dz=Math.sin(ang)*spread*(0.6+depth*0.2);
+    const end=v3(origin.x+dx,origin.y+rise,origin.z+dz);
+    const r0=0.025/(depth+1);
+    treeGrp.add(mkBranch(origin,end,r0*2.0,r0*0.25,mat,4));
+    twigs(end,mat,depth+1,max);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// TRUNK — massive, twisted Whomping Willow style
+// ═══════════════════════════════════════════════
+const trunkSegs=[
+  [v3(0,0,0),       v3(0.6,3.0,0.4),   1.80,1.55],
+  [v3(0.6,3.0,0.4), v3(1.0,6.0,-0.3),  1.55,1.30],
+  [v3(1.0,6.0,-0.3),v3(0.5,9.0,0.5),   1.30,1.08],
+  [v3(0.5,9.0,0.5), v3(-0.3,11.8,0.2), 1.08,0.88],
+  [v3(-0.3,11.8,0.2),v3(-0.1,14.0,0.3),0.88,0.72],
+];
+trunkSegs.forEach(([s,e,r0,r1],i)=>treeGrp.add(mkBranch(s,e,r0,r1,i%2?matMid:matDark,10)));
+
+// Knobs along trunk
+[
+  [v3(0.5,4.8,0.2),0.65],[v3(0.8,7.0,-0.15),0.55],
+  [v3(0.4,9.5,0.3),0.46],[v3(-0.2,12.2,0.1),0.38],
+].forEach(([p,r])=>addKnob(p,r,matMid));
+
+// ═══════════════════════════════════════════════
+// SKILL NODES — collect positions for tags
+// ═══════════════════════════════════════════════
+const skillNodes=[];   // {worldPos, skill, category}
+const catPositions=[]; // for category labels
+
+// Arm definition helper
+function buildArm(pts,rads,mat){
+  for(let i=0;i<pts.length-1;i++){
+    treeGrp.add(mkBranch(pts[i],pts[i+1],rads[i],rads[i+1],mat,7));
+    if(i>0) addKnob(pts[i],rads[i]*1.15,matMid);
+  }
+  addKnob(pts[pts.length-1],rads[pts.length-1]*1.2,matMid);
+}
+
+// Helper to grow sub-branches with skill tags
+function addSkillBranch(base,direction,radius,skill,category){
+  const end=base.clone().add(direction);
+  treeGrp.add(mkBranch(base,end,radius*1.6,radius,matDark,5));
+  twigs(end,matDark,0,2);
+  skillNodes.push({worldPos:end.clone(),skill,category});
+}
+
+// ══════════════════════════════════════════
+// BRANCH 1 — FAR LEFT   (Languages)
+// Massive arm sweeping dramatically left and UP
+// ══════════════════════════════════════════
+{
+  const cat=CATEGORIES[0];
+  const pts=[
+    v3(-0.1,14.0,0.3),
+    v3(-4.5,15.2,0.9),
+    v3(-9.5,17.8,1.6),
+    v3(-14.0,20.5,0.8),
+    v3(-17.5,24.0,0.2),
+  ];
+  const rads=[0.68,0.52,0.38,0.26,0.16];
+  buildArm(pts,rads,matDark);
+  catPositions.push({worldPos:pts[2].clone(),label:cat.name,color:cat.color});
+  // Skill sub-branches fanning off this arm
+  const subs=[
+    {from:1, d:v3(-1.2,4.0,-1.0), r:0.22},
+    {from:1, d:v3(-0.5,3.5, 1.5), r:0.20},
+    {from:2, d:v3(-2.0,3.2,-0.8), r:0.18},
+    {from:2, d:v3(-1.5,2.8, 1.2), r:0.17},
+    {from:3, d:v3(-1.8,2.5,-0.6), r:0.15},
+    {from:3, d:v3(-0.8,3.0, 1.0), r:0.14},
+    {from:4, d:v3(-1.5,2.2, 0.4), r:0.12},
+  ];
+  subs.forEach((s,i)=>{
+    if(i<cat.skills.length)
+      addSkillBranch(pts[s.from].clone(),s.d,s.r,cat.skills[i],cat);
+    else twigs(pts[s.from].clone(),matDark,0,2);
+  });
+  twigs(pts[4],matDark,0,2);
+}
+
+// ══════════════════════════════════════════
+// BRANCH 2 — FAR RIGHT  (Technical Skills)
+// Sweeps right and forward
+// ══════════════════════════════════════════
+{
+  const cat=CATEGORIES[1];
+  const pts=[
+    v3(-0.1,14.0,0.3),
+    v3(4.8,14.8,0.0),
+    v3(9.8,17.2,-1.2),
+    v3(14.5,20.0,-0.4),
+    v3(18.0,23.5, 0.8),
+  ];
+  const rads=[0.68,0.52,0.38,0.26,0.16];
+  buildArm(pts,rads,matMid);
+  catPositions.push({worldPos:pts[2].clone(),label:cat.name,color:cat.color});
+  const subs=[
+    {from:1, d:v3(1.5,3.8, 1.2), r:0.22},
+    {from:1, d:v3(2.0,3.2,-1.0), r:0.20},
+    {from:2, d:v3(2.2,3.0, 0.8), r:0.18},
+    {from:2, d:v3(1.8,2.8,-1.2), r:0.17},
+    {from:3, d:v3(1.5,2.5, 0.6), r:0.15},
+    {from:3, d:v3(2.0,2.2,-0.8), r:0.14},
+    {from:4, d:v3(1.2,2.0, 0.4), r:0.12},
+  ];
+  subs.forEach((s,i)=>{
+    if(i<cat.skills.length)
+      addSkillBranch(pts[s.from].clone(),s.d,s.r,cat.skills[i],cat);
+    else twigs(pts[s.from].clone(),matDark,0,2);
+  });
+  twigs(pts[4],matDark,0,2);
+}
+
+// ══════════════════════════════════════════
+// BRANCH 3 — UPPER CENTER (Frameworks)
+// Dramatic upward crown
+// ══════════════════════════════════════════
+{
+  const cat=CATEGORIES[2];
+  const pts=[
+    v3(-0.1,14.0,0.3),
+    v3(1.0,17.5, 0.8),
+    v3(1.8,22.0,-0.4),
+    v3(1.2,27.0, 0.6),
+    v3(0.6,31.5, 0.2),
+  ];
+  const rads=[0.58,0.44,0.30,0.20,0.12];
+  buildArm(pts,rads,matLight);
+  catPositions.push({worldPos:pts[2].clone(),label:cat.name,color:cat.color});
+  const subs=[
+    {from:1, d:v3(-2.2,3.0, 0.8), r:0.18},
+    {from:1, d:v3( 2.0,2.8,-0.6), r:0.18},
+    {from:2, d:v3(-1.8,2.5, 1.0), r:0.16},
+    {from:2, d:v3( 1.6,2.8,-0.8), r:0.15},
+    {from:3, d:v3(-1.5,2.2, 0.5), r:0.13},
+    {from:3, d:v3( 1.2,2.5,-0.6), r:0.12},
+    {from:4, d:v3( 0.5,2.2, 0.4), r:0.10},
+  ];
+  subs.forEach((s,i)=>{
+    if(i<cat.skills.length)
+      addSkillBranch(pts[s.from].clone(),s.d,s.r,cat.skills[i],cat);
+    else twigs(pts[s.from].clone(),matDark,0,2);
+  });
+  twigs(pts[4],matDark,0,2);
+}
+
+// ══════════════════════════════════════════
+// BRANCH 4 — MID-LEFT LOW (Tools)
+// Secondary arm from mid-trunk
+// ══════════════════════════════════════════
+{
+  const cat=CATEGORIES[3];
+  const pts=[
+    v3(0.5,9.0,0.5),
+    v3(-3.0,12.0,1.5),
+    v3(-6.5,15.5,2.2),
+    v3(-9.5,19.5,1.8),
+    v3(-12.0,23.0,1.0),
+  ];
+  const rads=[0.50,0.38,0.28,0.19,0.12];
+  buildArm(pts,rads,matDark);
+  catPositions.push({worldPos:pts[2].clone(),label:cat.name,color:cat.color});
+  const subs=[
+    {from:1, d:v3(-1.5,3.2,-0.8), r:0.16},
+    {from:1, d:v3(-0.8,2.8, 1.5), r:0.15},
+    {from:2, d:v3(-1.8,2.5,-0.6), r:0.14},
+    {from:2, d:v3(-1.0,3.0, 1.2), r:0.13},
+    {from:3, d:v3(-1.5,2.2,-0.4), r:0.12},
+    {from:3, d:v3(-0.8,2.5, 0.8), r:0.11},
+    {from:4, d:v3(-1.2,2.0, 0.3), r:0.10},
+  ];
+  subs.forEach((s,i)=>{
+    if(i<cat.skills.length)
+      addSkillBranch(pts[s.from].clone(),s.d,s.r,cat.skills[i],cat);
+    else twigs(pts[s.from].clone(),matDark,0,2);
+  });
+  twigs(pts[4],matDark,0,2);
+}
+
+// ══════════════════════════════════════════
+// Extra side arms for Whomping Willow feel
+// ══════════════════════════════════════════
+// Back right mid
+{
+  const pts=[v3(1.0,6.0,-0.3),v3(3.5,9.0,-2.0),v3(6.5,13.0,-2.8),v3(9.0,17.0,-2.0)];
+  const rads=[0.40,0.28,0.18,0.10];
+  buildArm(pts,rads,matMid);
+  twigs(pts[3],matDark,0,3);
+}
+// Back left low
+{
+  const pts=[v3(0.6,3.0,0.4),v3(-2.0,5.5,-1.0),v3(-4.5,9.0,-1.8),v3(-7.0,12.5,-1.2)];
+  const rads=[0.38,0.26,0.17,0.10];
+  buildArm(pts,rads,matDark);
+  twigs(pts[3],matDark,0,3);
+}
+// Crown twig fills
+twigs(v3(1.0,6.0,-0.3),matMid,0,1);
+twigs(v3(0.5,9.0,0.5),matDark,0,1);
+
+// ══════════════════════════════════════════
+// ROOTS & ROCKS
+// ══════════════════════════════════════════
+function addRoot(ox,oz,dx,dz,len,segs=6){
+  const mat=new THREE.MeshStandardMaterial({color:0x0d0a04,roughness:1.0});
+  for(let i=0;i<segs;i++){
+    const t=(i+0.5)/segs;
+    const twist=Math.sin(t*Math.PI*2)*0.3;
+    const g=new THREE.CylinderGeometry(lerp(0.28,0.05,t)*0.75,lerp(0.28,0.05,t),len/segs,6);
+    const m=new THREE.Mesh(g,mat);
+    m.position.set(ox+dx*len*t,Math.sin(t*Math.PI)*0.5-0.05,oz+dz*len*t);
+    m.rotation.z=dx*0.3+twist*0.1;m.rotation.x=dz*0.3;
+    m.castShadow=true;scene.add(m);
+  }
+}
+addRoot(-0.5,0.6,-0.94,0.34,3.2,6);
+addRoot(0.6,-0.4,0.90,-0.44,2.6,5);
+addRoot(0.1,1.0,0.2,0.98,2.4,5);
+addRoot(0.9,0.7,0.65,0.76,2.0,4);
+addRoot(-1.2,0.3,-0.58,-0.82,1.8,4);
+
+[[-0.7,0.3,0.35,0.28,0.62,0.14,3.2,1.0,2.6],
+ [1.6,0.18,-0.7,0.12,1.18,0.32,2.2,0.82,1.7],
+ [-2.2,0.08,0.7,0.5,0.32,0.95,1.8,0.62,1.5],
+ [0.6,-0.12,1.5,0.88,0.22,0.42,2.4,0.72,2.8],
+ [-1.1,-0.1,-1.1,0.22,0.82,0.62,1.5,0.56,1.4]].forEach(a=>{
+  const [x,y,z,rx,ry,rz,sx,sy,sz]=a;
+  const g=new THREE.DodecahedronGeometry(1,1).toNonIndexed();
+  const arr=g.attributes.position.array;
+  for(let i=0;i<arr.length;i+=3){arr[i]*=rng(0.8,1.25);arr[i+1]*=rng(0.65,1.1);arr[i+2]*=rng(0.8,1.25);}
+  g.attributes.position.needsUpdate=true;g.computeVertexNormals();
+  const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:0x080d09,roughness:0.99}));
+  m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.scale.set(sx,sy,sz);
+  m.castShadow=true;m.receiveShadow=true;scene.add(m);
+});
+
+// ══════════════════════════════════════════
+// BACKGROUND PINES
+// ══════════════════════════════════════════
+for(let i=0;i<28;i++){
+  const ang=(i/28)*Math.PI*2+rng(-0.25,0.25);
+  const dist=rng(22,55),h=rng(5,15);
+  const x=Math.cos(ang)*dist,z=Math.sin(ang)*dist-6;
+  const dm=new THREE.MeshLambertMaterial({color:0x020d04});
+  const tr=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.3,h,6),dm);
+  tr.position.set(x,h*0.5,z);scene.add(tr);
+  for(let j=0;j<4;j++){
+    const cH=rng(2.8,5.5),cR=rng(1.0,2.2)*(1-j*0.16);
+    const cn=new THREE.Mesh(new THREE.ConeGeometry(cR,cH,7),dm);
+    cn.position.set(x,h+cH*0.5-j*cH*0.38+j*0.6,z);scene.add(cn);
+  }
+}
+
+// ══════════════════════════════════════════
+// SKILL ORBS — glowing spheres at node tips
+// ══════════════════════════════════════════
+skillNodes.forEach(node=>{
+  const col=new THREE.Color(node.category.color);
+  const orbGeo=new THREE.SphereGeometry(0.12,12,10);
+  const orbMat=new THREE.MeshStandardMaterial({
+    color:col,emissive:col,emissiveIntensity:1.8,
+    roughness:0.2,metalness:0.1,transparent:true,opacity:0.9
+  });
+  const orb=new THREE.Mesh(orbGeo,orbMat);
+  orb.position.copy(node.worldPos);
+  treeGrp.add(orb);
+  node.orbMesh=orb;
+
+  // Tiny glow sprite
+  const glowSprite=new THREE.Sprite(new THREE.SpriteMaterial({
+    color:col,transparent:true,opacity:0.35,depthWrite:false,blending:THREE.AdditiveBlending
+  }));
+  glowSprite.scale.set(0.55,0.55,1);
+  glowSprite.position.copy(node.worldPos);
+  treeGrp.add(glowSprite);
+  node.glowSprite=glowSprite;
+});
+
+// ══════════════════════════════════════════
+// FIREFLIES
+// ══════════════════════════════════════════
+const FC=180;
+const ffPos=new Float32Array(FC*3),ffPh=new Float32Array(FC),ffSp=new Float32Array(FC*3);
+for(let i=0;i<FC;i++){
+  const ang=rng(0,Math.PI*2),r=rng(0,18);
+  ffPos[i*3]=Math.cos(ang)*r+rng(-3,3);
+  ffPos[i*3+1]=rng(0.5,28);
+  ffPos[i*3+2]=Math.sin(ang)*r+rng(-3,3);
+  ffPh[i]=rng(0,Math.PI*2);
+  ffSp[i*3]=rng(-0.01,0.01);ffSp[i*3+1]=rng(-0.005,0.008);ffSp[i*3+2]=rng(-0.01,0.01);
+}
+const ffGeo=new THREE.BufferGeometry();
+ffGeo.setAttribute('position',new THREE.BufferAttribute(ffPos,3));
+const ffMat=new THREE.PointsMaterial({color:0x44ffaa,size:0.16,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending});
+scene.add(new THREE.Points(ffGeo,ffMat));
+
+// ══════════════════════════════════════════
+// GROUND MIST
+// ══════════════════════════════════════════
+const MC=260;const mPos=new Float32Array(MC*3);
+for(let i=0;i<MC;i++){
+  const a=rng(0,Math.PI*2),r=rng(0,22);
+  mPos[i*3]=Math.cos(a)*r;mPos[i*3+1]=rng(0,2.0);mPos[i*3+2]=Math.sin(a)*r;
+}
+const mGeo=new THREE.BufferGeometry();mGeo.setAttribute('position',new THREE.BufferAttribute(mPos,3));
+scene.add(new THREE.Points(mGeo,new THREE.PointsMaterial({color:0x004d22,size:3.5,transparent:true,opacity:0.045,depthWrite:false,blending:THREE.AdditiveBlending})));
+
+// ═══════════════════════════════════════════════
+// SKILL TAGS (DOM overlay)
+// ═══════════════════════════════════════════════
+const appDiv  =document.getElementById('app');
+const svgEl   =document.getElementById('overlay-svg');
+const tagData =skillNodes.map((node,i)=>{
+  const delay=0.8+i*0.09;
+  const div=document.createElement('div');
+  div.className='stag';
+  div.textContent=node.skill.label;
+  div.style.color=node.category.color;
+  div.style.borderColor=node.category.color+'44';
+  div.style.textShadow=`0 0 10px ${node.category.color}cc,0 0 24px ${node.category.color}55`;
+  div.style.animationDelay=delay+'s';
+  appDiv.appendChild(div);
+
+  // SVG connector line
+  const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+  line.setAttribute('stroke',node.category.color);
+  line.setAttribute('stroke-opacity','0.32');
+  line.setAttribute('stroke-width','1');
+  svgEl.appendChild(line);
+
+  // Click handler
+  div.addEventListener('click',()=>zoomToSkill(node,div));
+
+  return {div,line,worldPos:node.worldPos,node};
+});
+
+// Category labels
+const catTagData=catPositions.map(cp=>{
+  const div=document.createElement('div');
+  div.className='cat-label';
+  div.textContent=cp.label;
+  div.style.color=cp.color;
+  appDiv.appendChild(div);
+  return {div,worldPos:cp.worldPos};
+});
+
+function updateTags(){
+  tagData.forEach(({div,line,worldPos})=>{
+    const vp=worldPos.clone();
+    treeGrp.localToWorld(vp);
+    const proj=vp.clone().project(camera);
+    const sx=(proj.x*0.5+0.5)*innerWidth;
+    const sy=(-proj.y*0.5+0.5)*innerHeight;
+    const behind=proj.z>1;
+    div.style.opacity=behind?'0':'1';
+    div.style.left=sx+'px';
+    div.style.top=(sy-6)+'px';
+    line.setAttribute('x1',sx);line.setAttribute('y1',sy);
+    line.setAttribute('x2',sx);line.setAttribute('y2',sy+22);
+    line.style.opacity=behind?'0':'0.32';
+  });
+  catTagData.forEach(({div,worldPos})=>{
+    const vp=worldPos.clone();
+    treeGrp.localToWorld(vp);
+    const proj=vp.clone().project(camera);
+    const sx=(proj.x*0.5+0.5)*innerWidth;
+    const sy=(-proj.y*0.5+0.5)*innerHeight;
+    const behind=proj.z>1;
+    div.style.opacity=behind?'0':'1';
+    div.style.left=sx+'px';
+    div.style.top=sy+'px';
+  });
+}
+
+// ═══════════════════════════════════════════════
+// CAMERA — orbit + zoom animation
+// ═══════════════════════════════════════════════
+const sph={theta:0,phi:1.20,r:34};
+const camTgt=v3(0,13,0);
+let camAnim=null; // {from, to, t, targetPos, targetLookAt}
+let isZoomed=false;
+const defaultSph={theta:0,phi:1.20,r:34};
+
+function refreshCam(){
+  if(camAnim)return; // animation takes over
+  camera.position.set(
+    camTgt.x+sph.r*Math.sin(sph.phi)*Math.sin(sph.theta),
+    camTgt.y+sph.r*Math.cos(sph.phi),
+    camTgt.z+sph.r*Math.sin(sph.phi)*Math.cos(sph.theta));
+  camera.lookAt(camTgt);
+}
+refreshCam();
+
+function zoomToSkill(node,divEl){
+  // World position of the node
+  const wp=node.worldPos.clone();
+  treeGrp.localToWorld(wp);
+
+  // Target camera pos: pull back a bit and slightly to the side
+  const offset=new THREE.Vector3(3, 2, 7);
+  const targetPos=wp.clone().add(offset);
+  const fromPos=camera.position.clone();
+  const fromLook=camTgt.clone();
+
+  camAnim={
+    fromPos,fromLook,
+    toPos:targetPos,
+    toLook:wp.clone(),
+    t:0,
+    duration:60, // frames
+    onDone:()=>{
+      isZoomed=true;
+      document.getElementById('zoom-out').classList.add('visible');
+      // Store resting zoomed-in position for pull drift
+      zoompedPos = camera.position.clone();
+      const ld2  = new THREE.Vector3();
+      camera.getWorldDirection(ld2);
+      zoomedLook = camera.position.clone().add(ld2.multiplyScalar(10));
+      // Reset pull state fresh
+      pullProgress = 0; pullVelocity = 0; pullActive = false; snapBack = false;
+      drawPullRing(0, 'rgb(0,200,120)');
+    }
+  };
+
+  // Highlight tag
+  tagData.forEach(td=>td.div.classList.remove('active'));
+  divEl.classList.add('active');
+
+  // Show panel
+  const panel=document.getElementById('skill-panel');
+  document.getElementById('panel-category').textContent=node.category.name;
+  document.getElementById('panel-name').textContent=node.skill.label;
+  document.getElementById('panel-bar').style.width='0%';
+  panel.classList.add('visible');
+  setTimeout(()=>{
+    document.getElementById('panel-bar').style.width=node.skill.prof+'%';
+  },120);
+}
+
+function resetCamera(){
+  const fromPos=camera.position.clone();
+  const fromLook=camTgt.clone();
+  camAnim={
+    fromPos,fromLook,
+    toPos:v3(
+      camTgt.x+defaultSph.r*Math.sin(defaultSph.phi)*Math.sin(defaultSph.theta),
+      camTgt.y+defaultSph.r*Math.cos(defaultSph.phi),
+      camTgt.z+defaultSph.r*Math.sin(defaultSph.phi)*Math.cos(defaultSph.theta)
+    ),
+    toLook:camTgt.clone(),
+    t:0,duration:70,
+    onDone:()=>{
+      isZoomed=false;
+      sph.theta=defaultSph.theta;sph.phi=defaultSph.phi;sph.r=defaultSph.r;
+    }
+  };
+  tagData.forEach(td=>td.div.classList.remove('active'));
+  document.getElementById('skill-panel').classList.remove('visible');
+  document.getElementById('zoom-out').classList.remove('visible');
+  // Clear pull state
+  pullProgress = 0; pullVelocity = 0; pullActive = false; snapBack = false;
+  showPullUI(false);
+  pullVigEl.style.opacity = '0';
+  drawPullRing(0, 'rgb(0,200,120)');
+}
+
+document.getElementById('zoom-out').addEventListener('click',resetCamera);
+document.getElementById('panel-close').addEventListener('click',resetCamera);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&isZoomed)resetCamera();});
+
+function easeInOut(t){return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
+
+// ── Orbit controls ──────────────────────────
+let isDrag=false,prevMx=0,prevMy=0;
+canvas.addEventListener('mousedown',e=>{if(!isZoomed){isDrag=true;prevMx=e.clientX;prevMy=e.clientY;}});
+window.addEventListener('mouseup',()=>isDrag=false);
+window.addEventListener('mousemove',e=>{
+  if(!isDrag)return;
+  sph.theta-=(e.clientX-prevMx)*0.006;
+  sph.phi=clamp(sph.phi+(e.clientY-prevMy)*0.006,0.15,1.58);
+  prevMx=e.clientX;prevMy=e.clientY;
+  refreshCam();
+});
+// ── Smooth pull-back scroll system ─────────────────────────────
+// Accumulated scroll delta drives a 0→1 "pullProgress".
+// Camera physically drifts back during pull. Release mid-scroll → snaps forward.
+// Hit threshold → cinematic zoom-out fires.
+let pullProgress   = 0;   // 0=zoomed in, 1=fully pulled out
+let pullVelocity   = 0;   // inertia
+let pullActive     = false;
+let snapBack       = false;
+let zoompedPos     = null; // camera position at zoom-in moment
+let zoomedLook     = null;
+
+const PULL_THRESHOLD  = 1.0;   // must reach this to trigger reset
+const PULL_DECAY      = 0.07;  // how fast it snaps back when not scrolling
+const PULL_INERTIA    = 0.88;  // momentum carry
+
+const pullRingEl  = document.getElementById('pull-ring');
+const pullLabelEl = document.getElementById('pull-label');
+const pullVigEl   = document.getElementById('pull-vignette');
+const pullCtx     = pullRingEl.getContext('2d');
+
+function drawPullRing(p, color) {
+  const W = 88, H = 88, cx = 44, cy = 44, R = 34;
+  pullCtx.clearRect(0, 0, W, H);
+  const t = Math.min(Math.max(p, 0), 1);
+
+  // Track ring (dim)
+  pullCtx.beginPath();
+  pullCtx.arc(cx, cy, R, 0, Math.PI * 2);
+  pullCtx.strokeStyle = 'rgba(0,200,120,0.10)';
+  pullCtx.lineWidth = 1.5;
+  pullCtx.stroke();
+
+  if (t <= 0) return;
+
+  // Filled arc — starts at top, sweeps clockwise
+  const start = -Math.PI / 2;
+  const end   = start + Math.PI * 2 * t;
+
+  // Glow layer
+  pullCtx.beginPath();
+  pullCtx.arc(cx, cy, R, start, end);
+  pullCtx.strokeStyle = color.replace(')',',0.18)').replace('rgb','rgba');
+  pullCtx.lineWidth = 8;
+  pullCtx.lineCap = 'round';
+  pullCtx.stroke();
+
+  // Core arc
+  pullCtx.beginPath();
+  pullCtx.arc(cx, cy, R, start, end);
+  pullCtx.strokeStyle = color;
+  pullCtx.lineWidth = 2;
+  pullCtx.lineCap = 'round';
+  pullCtx.stroke();
+
+  // Dot at tip
+  const tipX = cx + R * Math.cos(end);
+  const tipY = cy + R * Math.sin(end);
+  pullCtx.beginPath();
+  pullCtx.arc(tipX, tipY, 3, 0, Math.PI * 2);
+  pullCtx.fillStyle = color;
+  pullCtx.fill();
+}
+
+function showPullUI(show) {
+  if (show) {
+    pullRingEl.classList.add('visible');
+    pullLabelEl.classList.add('visible');
+  } else {
+    pullRingEl.classList.remove('visible');
+    pullLabelEl.classList.remove('visible');
+  }
+}
+
+function updatePullCamera() {
+  if (!isZoomed || !zoompedPos) return;
+
+  const defaultPos = v3(
+    camTgt.x + defaultSph.r * Math.sin(defaultSph.phi) * Math.sin(defaultSph.theta),
+    camTgt.y + defaultSph.r * Math.cos(defaultSph.phi),
+    camTgt.z + defaultSph.r * Math.sin(defaultSph.phi) * Math.cos(defaultSph.theta)
+  );
+
+  const p  = clamp(pullProgress, 0, 1);
+  const ep = easeInOut(p);
+
+  // Live camera drift — smoothly moves toward default as you scroll
+  if (!camAnim) {
+    camera.position.lerpVectors(zoompedPos, defaultPos, ep * 0.72);
+    const lk = new THREE.Vector3().lerpVectors(zoomedLook, camTgt, ep * 0.72);
+    camera.lookAt(lk);
+  }
+
+  // Vignette darkens as you pull
+  pullVigEl.style.opacity = (p * 0.7).toFixed(3);
+
+  // Ring color shifts from green → white as threshold nears
+  const rr = Math.round(lerp(0,   200, p));
+  const rg = Math.round(lerp(200, 255, p));
+  const rb = Math.round(lerp(120, 255, p));
+  drawPullRing(p, `rgb(${rr},${rg},${rb})`);
+}
+
+canvas.addEventListener('wheel', e => {
+  if (!isZoomed) {
+    sph.r = clamp(sph.r + e.deltaY * 0.03, 10, 80);
+    refreshCam();
+    return;
+  }
+
+  // Accumulate scroll — only backwards (scroll down = pull away)
+  const delta = e.deltaY * 0.0028;
+  pullVelocity += delta;
+  snapBack = false;
+
+  if (!pullActive && pullProgress < 0.04) {
+    // Store camera position at start of pull for live drift
+    zoompedPos  = camera.position.clone();
+    zoomedLook  = new THREE.Vector3();
+    camera.getWorldDirection(zoomedLook);
+    // Convert direction to lookAt point
+    zoomedLook = camera.position.clone().add(zoomedLook.multiplyScalar(10));
+  }
+
+  pullActive = true;
+  showPullUI(true);
+
+  // Snap release after short idle (detect when user stops)
+  clearTimeout(window._pullTimeout);
+  window._pullTimeout = setTimeout(() => {
+    if (pullProgress < PULL_THRESHOLD) snapBack = true;
+  }, 180);
+
+}, { passive: true });
+let lastTch=null;
+canvas.addEventListener('touchstart',e=>{lastTch=e.touches[0];});
+canvas.addEventListener('touchmove',e=>{
+  if(!lastTch||isZoomed)return;
+  const t=e.touches[0];
+  sph.theta-=(t.clientX-lastTch.clientX)*0.007;
+  sph.phi=clamp(sph.phi+(t.clientY-lastTch.clientY)*0.007,0.15,1.58);
+  lastTch=t;refreshCam();e.preventDefault();
+},{passive:false});
+
+// ═══════════════════════════════════════════════
+// RENDER LOOP
+// ═══════════════════════════════════════════════
+const lookAtCurrent=new THREE.Vector3();
+camera.getWorldDirection(lookAtCurrent);
+
+let clk=0;
+function animate(){
+  requestAnimationFrame(animate);
+  clk+=0.012;
+
+  skyMat.uniforms.uTime.value=clk;
+
+  // Wind sway — Whomping Willow feels alive
+  treeGrp.rotation.z=
+    Math.sin(clk*0.55)*0.018+
+    Math.sin(clk*1.15+0.9)*0.009+
+    Math.sin(clk*2.3+1.8)*0.004;
+  treeGrp.rotation.x=
+    Math.sin(clk*0.38+0.7)*0.008+
+    Math.cos(clk*0.85)*0.004;
+
+  // Orb pulse per skill
+  skillNodes.forEach((node,i)=>{
+    const pulse=0.85+0.15*Math.sin(clk*1.5+i*0.7);
+    node.orbMesh.scale.setScalar(pulse);
+    node.orbMesh.material.emissiveIntensity=1.4+0.7*pulse;
+    node.glowSprite.material.opacity=0.25+0.15*pulse;
+  });
+
+  // Firefly drift
+  const fp=ffGeo.attributes.position.array;
+  for(let i=0;i<FC;i++){
+    fp[i*3]  +=ffSp[i*3  ]*(0.5+0.5*Math.sin(clk+ffPh[i]));
+    fp[i*3+1]+=ffSp[i*3+1]*(0.5+0.5*Math.cos(clk*0.72+ffPh[i]));
+    fp[i*3+2]+=ffSp[i*3+2]*(0.5+0.5*Math.sin(clk*1.38+ffPh[i]));
+    if(fp[i*3+1]>30)fp[i*3+1]=0.5;
+    if(fp[i*3+1]<0) fp[i*3+1]=28;
+    const dx=fp[i*3],dz=fp[i*3+2];
+    if(Math.sqrt(dx*dx+dz*dz)>20){fp[i*3]*=0.94;fp[i*3+2]*=0.94;}
+  }
+  ffGeo.attributes.position.needsUpdate=true;
+  ffMat.opacity=0.45+0.42*Math.sin(clk*1.7);
+  ffMat.size=0.12+0.07*Math.sin(clk*2.2);
+
+  // Moon halo
+  haloS.material.opacity=0.06+0.04*Math.sin(clk*0.55);
+
+  // Camera animation
+  if(camAnim){
+    camAnim.t++;
+    const p=Math.min(camAnim.t/camAnim.duration,1);
+    const e=easeInOut(p);
+    camera.position.lerpVectors(camAnim.fromPos,camAnim.toPos,e);
+    const lk=new THREE.Vector3().lerpVectors(camAnim.fromLook,camAnim.toLook,e);
+    camera.lookAt(lk);
+    if(p>=1){
+      if(camAnim.onDone)camAnim.onDone();
+      camAnim=null;
+    }
+  }
+
+  // ── Pull-back physics ─────────────────────────────────────
+  if (isZoomed && !camAnim) {
+    if (pullActive) {
+      pullProgress += pullVelocity;
+      pullVelocity *= PULL_INERTIA;
+      pullProgress  = clamp(pullProgress, 0, PULL_THRESHOLD + 0.05);
+
+      if (Math.abs(pullVelocity) < 0.0006) {
+        pullVelocity = 0;
+        if (snapBack || pullProgress < PULL_THRESHOLD * 0.35) {
+          // Snap back — rubber band
+          snapBack = true;
+        }
+      }
+
+      if (snapBack) {
+        pullProgress *= 0.88; // smooth decay
+        if (pullProgress < 0.01) {
+          pullProgress = 0;
+          pullActive   = false;
+          snapBack     = false;
+          showPullUI(false);
+          pullVigEl.style.opacity = '0';
+          drawPullRing(0, 'rgb(0,200,120)');
+          // Restore camera to zoomed-in position
+          if (zoompedPos && !camAnim) {
+            // Soft re-snap to zoomed pos
+            camera.position.lerp(zoompedPos, 0.12);
+          }
+        }
+      }
+
+      updatePullCamera();
+
+      // THRESHOLD REACHED — fire cinematic release
+      if (pullProgress >= PULL_THRESHOLD) {
+        pullActive   = false;
+        pullProgress = 0;
+        pullVelocity = 0;
+        snapBack     = false;
+        showPullUI(false);
+        pullVigEl.style.opacity = '0';
+        drawPullRing(0, 'rgb(0,200,120)');
+        resetCamera();
+      }
+    }
+  }
+
+  updateTags();
+  renderer.render(scene,camera);
+}
+
+// ── Loader fade ───────────────────────────────
+setTimeout(()=>{
+  const ld=document.getElementById('loader');
+  ld.style.opacity='0';
+  setTimeout(()=>ld.remove(),1200);
+},900);
+
+animate();
+
+window.addEventListener('resize',()=>{
+  renderer.setSize(innerWidth,innerHeight);
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  refreshCam();
+});
+</script>
+</body>
+</html>
+
+The Tree final version
