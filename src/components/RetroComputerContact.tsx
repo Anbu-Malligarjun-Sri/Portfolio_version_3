@@ -11,7 +11,6 @@ import React, {
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   PerspectiveCamera,
-  Environment,
   Sparkles,
   RoundedBox,
   OrbitControls,
@@ -1441,7 +1440,10 @@ const Scene: React.FC<SceneProps> = ({
       <pointLight position={[2.5, 1.5, 2]} intensity={0.5} color="#d68a5a" decay={2} distance={8} />
       <pointLight position={[-2, 2, 2]} intensity={0.4} color="#5aa4d6" decay={2} distance={7} />
 
-      <Environment preset="city" />
+        {/* Removed Environment preset="city" because it fetched an external HDR
+          asset (potsdamer_platz_1k.hdr) which failed to load in some setups.
+          Use local lights as a deterministic fallback. */}
+        <hemisphereLight skyColor="#c8d4e8" groundColor="#101426" intensity={0.6} />
 
       {/*
         Camera directly in front of the monitor at eye-level.
