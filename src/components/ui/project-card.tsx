@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ArrowUpRight, Folder, Star } from "lucide-react";
+import { ArrowUpRight, Crosshair } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ProjectCardProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -33,58 +33,76 @@ const ProjectCard = React.forwardRef<HTMLAnchorElement, ProjectCardProps>(
       <div
         ref={ref as any}
         className={cn(
-          "group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/5 bg-void-50/30 p-8 transition-all duration-500 hover:-translate-y-2 hover:border-neon/20 hover:bg-void-50/50 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.6),0_0_30px_rgba(0,255,148,0.05)]",
+          "group relative flex flex-col justify-between overflow-hidden border-2 border-[#121212] bg-[#EBE8DF] p-6 lg:p-8 transition-transform duration-500 hover:-translate-y-2 hover:shadow-[12px_12px_0px_0px_#121212]",
           className
         )}
+        {...props}
       >
-        {/* Visual Header / Glow */}
-        <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-neon/5 blur-[60px] transition-all duration-700 group-hover:bg-neon/15 group-hover:blur-[80px]" />
+        {/* Print Texture Overlay */}
+        <div 
+          className="absolute inset-0 z-0 pointer-events-none opacity-[0.03]" 
+          style={{ 
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` 
+          }} 
+        />
 
-        {/* Header: Folder Icon + Links */}
-        <div className="mb-6 flex items-center justify-between relative z-10">
-          <div className="text-neon/80 group-hover:text-neon transition-colors duration-300">
-            <Folder className="h-10 w-10" strokeWidth={1.2} />
+        {/* Header: Editorial Section / Featured Tag */}
+        <div className="mb-8 flex items-end justify-between border-b-4 border-[#121212] pb-4 relative z-10">
+          <div className="flex flex-col">
+            <span className="font-mono text-[10px] text-gray-500 uppercase tracking-widest mb-1">
+              {featured ? "Ref: Premium Edition" : "Ref: Standard Index"}
+            </span>
+            <span className="font-sans text-xs font-bold tracking-[0.2em] uppercase text-[#121212]">
+              {featured ? "★ Cover Feature" : "Archived Project"}
+            </span>
           </div>
-          <div className="flex items-center gap-3">
+          
+          <div className="flex items-center gap-4">
             {featured && (
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-neon/10 border border-neon/20 shadow-[0_0_15px_rgba(0,255,148,0.2)]">
-                <span className="h-1.5 w-1.5 rounded-full bg-neon shadow-[0_0_8px_rgba(0,255,148,0.8)]" />
-              </div>
+              <Crosshair className="h-6 w-6 text-[#121212] opacity-50 animate-pulse" />
             )}
             <a 
               href={link}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-stark-dim transition-all duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-neon"
+              className="flex items-center justify-center p-2 border-2 border-[#121212] rounded-full transition-all duration-300 group-hover:bg-[#121212] group-hover:text-[#EBE8DF]"
             >
-              <ArrowUpRight className="h-6 w-6" />
+              <ArrowUpRight className="h-4 w-4" strokeWidth={2.5} />
             </a>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="relative z-10">
-          <h3 className="mb-4 font-serif-display text-2xl font-bold tracking-tight text-stark group-hover:text-neon transition-colors duration-300">
+        {/* Content Section */}
+        <div className="relative z-10 flex-1">
+          <h3 className="mb-6 font-forbes text-3xl md:text-4xl font-black tracking-tighter uppercase leading-[0.95] text-[#121212]">
             {title}
           </h3>
           <p
-            className="text-[14px] leading-relaxed text-stark-muted transition-colors duration-300 group-hover:text-stark/80"
-            style={{ fontFamily: "var(--font-body)" }}
+            className="text-base leading-relaxed text-gray-800 text-justify font-body"
           >
-            {description}
+            {/* We apply a mini drop-cap effect to the first letter to match the magazine vibe */}
+            <span className="float-left font-forbes text-4xl leading-[0.8] pt-1 pr-2 font-black text-[#121212]">
+              {description.charAt(0)}
+            </span>
+            {description.slice(1)}
           </p>
         </div>
 
-        {/* Footer: Tags */}
-        <div className="mt-8 flex flex-wrap gap-2 relative z-10 pt-6 border-t border-white/5">
-          {tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full border border-white/5 bg-white/5 px-3 py-1 font-mono text-[9px] font-medium tracking-wider uppercase text-stark-dim transition-colors group-hover:border-neon/20 group-hover:text-neon/80"
-            >
-              {tag}
-            </span>
-          ))}
+        {/* Footer: Tags & Blueprint Specs */}
+        <div className="mt-10 flex flex-col gap-4 relative z-10 border-t-2 border-[#121212] pt-4">
+          <span className="font-sans text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500">
+            Tech Specifications
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                className="font-mono text-[10px] uppercase tracking-wider border border-[#121212] bg-white px-2 py-1 text-[#121212] transition-colors group-hover:bg-[#121212] group-hover:text-[#EBE8DF]"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     );
